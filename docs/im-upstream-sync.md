@@ -8,7 +8,7 @@
 - Previous integrated baseline: v4.21.2, `34a370bfef1fcf577327b822d2091d2157ded0f8`.
 - Fork starting HEAD: `c2ff06743ef0facce86df925b4eccc440862f09e` (@tokensapi/dsh-connect 2.9.7).
 - Scope: all upstream `src/`, `plugin-src/`, and `test/` paths, with reviewed fork differences. Supporting resources, dependencies and applicable scripts are also integrated.
-- This is a local source integration and npm package. It has not been committed, pushed, published, or installed into the running TC profile.
+- Version 2.10.0 was published to the private Registry on 2026-11-11. Its source archive is restored on the 2.10.x source branch, based on the repository main branch at `9a0b19713721ab9ee2956fe0ccbbc8346affce86`. The 2.9.8 host-admission contract tests are retained. See `publishing.md` for reproducible build and release steps.
 
 Upstream additions include Email, Matrix, DS Bot integration, group-history and conversation-directory settings, queue and delivery changes, Telegram menu scopes, and locale changes. Their configuration and external account authorization remain opt-in.
 
@@ -53,3 +53,11 @@ The full `check:host` gate did not pass: the installed TC distribution omits `@d
 Final local regression: 5,064 tests, 5,020 passed, 44 skipped, zero failures. Build, package verification, full source audit and verification of the actual 31-file npm tarball passed.
 
 Exact product-version validation: TokensCowork 0.5.25 (dsh 0.1.5-rc.2) and 0.7.10 (dsh 0.2.1-rc.2) each passed 42 runtime/reconnect cases, packed activation, 12 management-route calls, and frontend SlotCore/LocaleRuntime contract probes. See tokenscowork-0.5.25-0.7.10.md for fixture details and boundaries. The npm tarball is unchanged.
+
+## 2.10.1 Telegram opt-in fix
+
+The integration remains pinned to the same upstream commit; this is not another upstream upgrade. Four defaults now require `thinkingTraces === true`: Telegram status, bridge construction, the Telegram settings checkbox, and shared token-client normalization. Existing explicit choices are preserved, and config loading performs no migration. Runtime code for other channels is unchanged from 2.10.0.
+
+`test/channels/telegram/thinking-default.test.mjs` covers omitted/false/true saved configurations through the real controller, runtime and bridge with a mocked Telegram API. It verifies status and settings, no trace messages by default, continued reasoning and tool messages for explicit opt-in, one final answer, and byte-identical config files after reading. The existing new-bot and toggle test now asserts the opt-in default.
+
+The upstream-difference policy records these deliberate changes, including updated fingerprints; it does not claim the four defaults are still equal to upstream.

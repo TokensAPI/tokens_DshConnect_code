@@ -81,8 +81,8 @@ export function createTokenChannelApi(channel, connectionSummary, {
       model: normalizeModelSelection(value.model),
       agentPreset: normalizeAgentPresetId(value.agentPreset),
       busyMessageMode: normalizeBusyMessageMode(value.busyMessageMode),      contextEnhancement: normalizeContextEnhancementConfig(value.contextEnhancement),
-      // Absent from the backend means ON; only an explicit false opts out.
-      thinkingTraces: value.thinkingTraces !== false,
+      // Traces are opt-in: an absent backend field stays OFF.
+      thinkingTraces: value.thinkingTraces === true,
       // Absent or unusable falls back to the same defaults the backend applies.
       thinkingNumbering: normalizeThinkingNumbering(value.thinkingNumbering),
       thinkingIntervalSeconds: normalizeThinkingIntervalSeconds(value.thinkingIntervalSeconds),

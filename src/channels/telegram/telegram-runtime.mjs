@@ -1693,8 +1693,8 @@ export class TelegramRuntime {
         state: this.#state,
         contextEnhancement: this.#contextEnhancement,
         accessPolicy: this.#accessPolicy,
-        // Default ON; an explicit false in the bot config opts out.
-        thinkingTraces: this.#config?.thinkingTraces !== false,
+        // Default OFF; only an explicit true in the bot config opts in.
+        thinkingTraces: this.#config?.thinkingTraces === true,
         status: this.#status,
         logger: this.#logger,
         replyTimeoutMs: this.#replyTimeoutMs,

@@ -63,7 +63,7 @@ function SendLimitField({ account, busy, saving, onCommit }) {
 export function ThinkingTracesSettings({
   account, busy, onSave, rpcCall, endpoints, onChanged,
 }) {
-  const checked = account.thinkingTraces !== false;
+  const checked = account.thinkingTraces === true;
   const storedNumbering = account.thinkingNumbering === true;
   const storedInterval = normalizeThinkingIntervalSeconds(account.thinkingIntervalSeconds);
   // 两个新控件共用一个 RPC，所以各自提交时都要带上对方的当前值。

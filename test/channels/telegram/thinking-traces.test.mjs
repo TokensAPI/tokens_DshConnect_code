@@ -634,7 +634,7 @@ test('D: thinkingTraces=false keeps placeholder editing and ignores reasoning', 
 
 // --- config store + controller: persistence and status ---------------------
 
-test('E1: an explicit thinkingTraces=false is persisted and reported, absent means ON', async (t) => {
+test('E1: thinking traces default OFF and explicit toggle choices are persisted', async (t) => {
   const directory = await mkdtemp(join(tmpdir(), 'dsh-im-thinking-traces-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const configPath = join(directory, 'config.json');
@@ -657,7 +657,7 @@ test('E1: an explicit thinkingTraces=false is persisted and reported, absent mea
   });
   const bound = await controller.bindCredentials({ token: TOKEN });
   const botId = bound.bots[0].botId;
-  assert.equal(bound.bots[0].thinkingTraces, true, 'absent config means ON');
+  assert.equal(bound.bots[0].thinkingTraces, false, 'absent config means OFF');
 
   const off = await controller.setThinkingTraces(botId, false);
   assert.equal(off.bots[0].thinkingTraces, false);

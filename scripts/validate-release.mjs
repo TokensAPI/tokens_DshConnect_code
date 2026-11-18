@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-export const RELEASE_REPOSITORY = 'sobermh/tokens_DshConnect_code';
+export const RELEASE_REPOSITORY = 'TokensAPI/tokens_DshConnect_code';
 export const RELEASE_REGISTRY = 'https://npm.tokensapi.ai/';
 
 export function validateMarketMetadata(manifest) {

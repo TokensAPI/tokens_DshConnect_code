@@ -57,8 +57,8 @@ export class TelegramController extends TokenBotController {
         return {
           ...bot,
           accessPolicy,
-          // Default ON; only an explicit false in the config opts out.
-          thinkingTraces: config?.thinkingTraces !== false,
+          // Default OFF; only an explicit true in the config opts in.
+          thinkingTraces: config?.thinkingTraces === true,
           thinkingNumbering: normalizeThinkingNumbering(config?.thinkingNumbering),
           // 0 means no pacing, which is also what an absent field means.
           thinkingIntervalSeconds: normalizeThinkingIntervalSeconds(config?.thinkingIntervalSeconds),

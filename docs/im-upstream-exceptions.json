@@ -110,8 +110,8 @@
       "sha256": "25bc259914f6fb6af0e193dd53f8a52c4d32e8b9198e50b78b75062bbcdc89f5"
     },
     "src/channels/telegram/telegram-runtime.mjs": {
-      "reason": "Preserve fork multi-select and approval buttons; separate polling and runtime lifetime so network recovery retains active reports and gates undispatched delivery until reconnection.",
-      "sha256": "dd11917f93a575bd48a41f80e6ab09e1ed935dca656897b457ac63cda59cde9b"
+      "reason": "Preserve PitWall reconnect ownership and require explicit thinking-trace opt-in when constructing the bridge.",
+      "sha256": "be5b1052f12a161fd324e90f81ebb3c933f967c48547b2845a108aaa326a166e"
     },
     "test/browser/session-channel-logos.fixture.js": {
       "reason": "Exercise inherited title shadows, live updates and complete typography restoration for the fork logo fix.",
@@ -188,6 +188,22 @@
     "test/update-ui.test.mjs": {
       "reason": "Assert fork package/private registry manual commands, safe profiles and version selection, plus the latest fallback notice.",
       "sha256": "89859bd996eba6dc4b2d9938a678135cfbb35f43de94ced4616026a56690d3cb"
+    },
+    "src/channels/telegram/telegram-controller.mjs": {
+      "reason": "Preserve fork Telegram controller behavior and require explicit opt-in for thinking-trace status; missing legacy settings remain off.",
+      "sha256": "de9d0bfb3610d0229673e74ff5e60e547839804e15aefc4722560b9df2b36ff4"
+    },
+    "plugin-src/client/channels/telegram/thinking-traces.js": {
+      "reason": "Default the Telegram thinking-trace settings switch to off unless the saved value is explicitly true.",
+      "sha256": "3e5b65367ec835dab0d86e970c94a4f8c5cc9cf78dd919dd75566ffdf7ed5cf0"
+    },
+    "plugin-src/client/channels/shared/token-api.js": {
+      "reason": "Normalize thinking traces as an explicit opt-in, including older Telegram status responses without the field.",
+      "sha256": "e5805a32b9ddf1e5119a33aed7822f3652b3cb54c387c716094fa1c55e4dceeb"
+    },
+    "test/channels/telegram/thinking-traces.test.mjs": {
+      "reason": "New Telegram bots default to off; explicit toggle choices continue to round-trip through configuration and status.",
+      "sha256": "5b5599500baf60cdda4e740fcc3aa6228a7f8f48542d0864d2473233cbcf9b8a"
     }
   }
 }

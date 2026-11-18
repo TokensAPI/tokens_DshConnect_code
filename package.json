@@ -1,6 +1,6 @@
 {
   "name": "@tokensapi/dsh-connect",
-  "version": "2.10.0",
+  "version": "2.10.1",
   "description": "统一管理 IM 机器人、AI Office 及飞书、钉钉个人账号授权，并接入本机 DeepSeek Harness。",
   "tokenscowork": {
     "displayName": {
@@ -53,10 +53,10 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sobermh/tokens_DshConnect_code.git"
+    "url": "git+https://github.com/TokensAPI/tokens_DshConnect_code.git"
   },
-  "homepage": "https://github.com/sobermh/tokens_DshConnect_code#readme",
-  "bugs": "https://github.com/sobermh/tokens_DshConnect_code/issues",
+  "homepage": "https://github.com/TokensAPI/tokens_DshConnect_code#readme",
+  "bugs": "https://github.com/TokensAPI/tokens_DshConnect_code/issues",
   "publishConfig": {
     "registry": "https://npm.tokensapi.ai/"
   },
@@ -126,7 +126,7 @@
     "check": "npm test && node scripts/verify-package.mjs",
     "prepack": "npm run build && node scripts/verify-package.mjs",
     "prepublishOnly": "npm test",
-    "check:host": "node scripts/check-host-contract.mjs && node --test --test-concurrency=1 --test-timeout=240000 test/host-rpc-contract.test.mjs test/host-channel-contract.test.mjs test/host-live-chunk-contract.test.mjs test/host-gateway-peer-contract.test.mjs test/host-live-contract.test.mjs"
+    "check:host": "node scripts/check-host-contract.mjs && node --test --test-concurrency=1 --test-timeout=240000 test/host-rpc-contract.test.mjs test/host-channel-contract.test.mjs test/host-live-chunk-contract.test.mjs test/host-gateway-peer-contract.test.mjs test/host-live-contract.test.mjs test/host-session-admission-contract.test.mjs"
   },
   "engines": {
     "node": ">=22.19.0"

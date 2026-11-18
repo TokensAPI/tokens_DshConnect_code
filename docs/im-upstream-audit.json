@@ -1,11 +1,11 @@
 {
   "upstream": "c826bfa415d79669d8ebba206cf4a1eac554d8e2",
-  "local": "c2ff06743ef0facce86df925b4eccc440862f09e",
+  "local": "acc195cc1337e2005663a6a871238e9eef5a2fb5",
   "complete": true,
   "counts": {
-    "equal": 740,
-    "reviewed-fork-difference": 47,
-    "fork-only": 76
+    "equal": 736,
+    "reviewed-fork-difference": 51,
+    "fork-only": 78
   },
   "files": [
     {
@@ -166,7 +166,8 @@
     },
     {
       "path": "plugin-src/client/channels/shared/token-api.js",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "Normalize thinking traces as an explicit opt-in, including older Telegram status responses without the field."
     },
     {
       "path": "plugin-src/client/channels/shared/token-channel.js",
@@ -202,7 +203,8 @@
     },
     {
       "path": "plugin-src/client/channels/telegram/thinking-traces.js",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "Default the Telegram thinking-trace settings switch to off unless the saved value is explicitly true."
     },
     {
       "path": "plugin-src/client/channels/wecom-app/api.js",
@@ -1933,7 +1935,8 @@
     },
     {
       "path": "src/channels/telegram/telegram-controller.mjs",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "Preserve fork Telegram controller behavior and require explicit opt-in for thinking-trace status; missing legacy settings remain off."
     },
     {
       "path": "src/channels/telegram/telegram-http.mjs",
@@ -1946,7 +1949,7 @@
     {
       "path": "src/channels/telegram/telegram-runtime.mjs",
       "status": "reviewed-fork-difference",
-      "reason": "Preserve fork multi-select and approval buttons; separate polling and runtime lifetime so network recovery retains active reports and gates undispatched delivery until reconnection."
+      "reason": "Preserve PitWall reconnect ownership and require explicit thinking-trace opt-in when constructing the bridge."
     },
     {
       "path": "src/channels/telegram/voice.mjs",
@@ -2723,8 +2726,13 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/telegram/thinking-default.test.mjs",
+      "status": "fork-only"
+    },
+    {
       "path": "test/channels/telegram/thinking-traces.test.mjs",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "New Telegram bots default to off; explicit toggle choices continue to round-trip through configuration and status."
     },
     {
       "path": "test/channels/telegram/voice-restart.test.mjs",
@@ -3256,6 +3264,10 @@
     },
     {
       "path": "test/host-rpc-contract.test.mjs",
+      "status": "fork-only"
+    },
+    {
+      "path": "test/host-session-admission-contract.test.mjs",
       "status": "fork-only"
     },
     {

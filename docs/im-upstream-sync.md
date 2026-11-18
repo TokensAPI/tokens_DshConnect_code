@@ -1,84 +1,63 @@
-# IM upstream synchronization
+# IM upstream synchronization: local PitWall build 2.10.0
 
-## Baseline and scope
+## Pinned integration
 
-- Upstream: https://github.com/xmanrui/dsh-im
-- Integrated target: v4.21.2, `34a370bfef1fcf577327b822d2091d2157ded0f8`.
-- Fork baseline: `2232cf6bad6fb45058ad793d0df6dbbfb7b0de25`.
-- Scope: all upstream `src/`, `plugin-src/`, and `test/` files, with explicitly
-  reviewed fork differences. This is integration, not a claim of byte identity.
-- No outer product changes, installed-profile changes, publishing, or commits.
+- Original upstream: https://github.com/xmanrui/dsh-im
+- Latest stable release checked through the public GitHub release API: v5.10.0 (published 2026-11-03).
+- Integrated commit: `c826bfa415d79669d8ebba206cf4a1eac554d8e2`.
+- Previous integrated baseline: v4.21.2, `34a370bfef1fcf577327b822d2091d2157ded0f8`.
+- Fork starting HEAD: `c2ff06743ef0facce86df925b4eccc440862f09e` (@tokensapi/dsh-connect 2.9.7).
+- Scope: all upstream `src/`, `plugin-src/`, and `test/` paths, with reviewed fork differences. Supporting resources, dependencies and applicable scripts are also integrated.
+- Version 2.10.0 was published to the private Registry on 2026-11-11. Its source archive is restored on the 2.10.x source branch, based on the repository main branch at `9a0b19713721ab9ee2956fe0ccbbc8346affce86`. The 2.9.8 host-admission contract tests are retained. See `publishing.md` for reproducible build and release steps.
 
-The earlier selective sync omitted the upstream Session snapshot file-return
-fix. The attachment path now matches upstream, including `snapshotEvents()`,
-observed turn tracking, and queued-versus-delivered wording. WhatsApp document
-tests exercise both legacy events and current snapshots.
+Upstream additions include Email, Matrix, DS Bot integration, group-history and conversation-directory settings, queue and delivery changes, Telegram menu scopes, and locale changes. Their configuration and external account authorization remain opt-in.
 
-## Integrated functionality
+## Preserved fork behavior
 
-All existing IM channels receive the upstream routing, reconnect, message,
-file, context, model, workspace, and interaction changes. Host activation and
-settings also include WeCom applications, AI Office, proactive delivery,
-Session synchronization, access policy, inbound-file TTL, interface language,
-bot aliases, and model/context settings. Upstream experimental labels remain.
+The host and client upstream entrypoints are embedded as `upstream-im.mjs` and `upstream-im.js`. The fork wrapper retains connection-center navigation, personal Feishu/DingTalk authorization, shared Feishu applications, private-registry updater, and supported Host compatibility fixes. The new shared Host peer avoids duplicate caller identities while retaining older Host operator fallback. Live assistant streaming retains revision-aware handling and recognizes both legacy and current event names.
 
-`plugin-src/host/upstream-im.mjs` and `plugin-src/client/upstream-im.js` retain
-upstream composition, with narrow extension points. The fork entrypoints own
-connection-center navigation, personal Feishu/DingTalk authorization, and the
-single shared Feishu application service. An application-service failure does
-not stop unrelated channels.
+Telegram keeps upstream single-choice cards and fork multi-select/approval buttons. The existing QQ manual credential path remains; the UNLICENSED QQ QR connector is excluded. Host credentials/tools remain external optional peers, not duplicated packages. Upstream Russian translations remain; 211 fork-only UI keys explicitly fall back to English. Chinese and English retain their fork translations.
 
-Telegram uses upstream single-choice cards and retains fork multi-select and
-approval buttons. Both callback formats use one long poll and the same inbound
-access policy. Existing actor, chat, message, stale-button, retry, and duplicate
-submission checks remain covered.
+## PitWall reconnect behavior
 
-## Intentional exceptions
+The reproduced failure was a polling connection error that caused the controller to destroy the Telegram runtime. The Host model continued generating the PDF, but its Harness waiter and artifact consumer had already been canceled, so the attachment had no active Telegram recipient.
 
-- QQ QR setup remains excluded: `@tencent-connect/qqbot-connector` 1.2.0 still
-  declares `UNLICENSED`. QQ manual AppID/AppSecret setup and messaging remain.
-- The updater targets `@tokensapi/dsh-connect`, including registry validation,
-  tarball identity, install command, and its own recovery-journal directory.
-- Windows journal replacement retries only transient EPERM/EACCES/EBUSY errors,
-  with a bounded delay; it never deletes the destination or bypasses recovery.
-- Fork authorization translations, shared application UI, package identity,
-  and Telegram multi-select/approval behavior remain intentional differences.
-- Tests target the upstream composition and fork wrapper independently. CRLF
-  normalization in dictionary-source checks supports Windows checkouts.
-- The shared Harness client recognizes both `tool/ptc-dispatch-start`, which
-  Harness emits from dsh 0.1.5 onward, and the pre-rename
-  `tool/code-dispatch-start`. Upstream still reads only the old name, so an
-  approval raised inside `run_code` loses its tool name and arguments on every
-  runtime this fork supports. Both names keep older Session records working.
+The custom runtime separates the polling lifetime from the report/bridge lifetime. Automatic and manual network recovery reuse the existing runtime, bridge and artifact consumer. Calls that have not reached Telegram wait for recovery for up to five minutes of continuous waiting. On reconnection they proceed once; requests already dispatched are never automatically replayed because their remote outcome can be unknown. The existing API and rate budget survive reconnection.
 
-`im-upstream-exceptions.json` records reasons and normalized SHA-256 fingerprints.
-Changing a reviewed file invalidates its exception instead of silently allowing
-all future differences at that path. `im-upstream-audit.json` is the inventory:
-483 equal files, 36 reviewed differences, 64 fork-only files, no missing upstream
-files or unreviewed differences.
+This is in-memory network recovery. It does not persist pending delivery across TC/process restart, plugin unload or removal. True stop cancels pending work. Credential or configuration replacement still recreates the runtime. A timed-out or already-dispatched failed send is not promised automatic recovery.
 
-## Verification and maintenance
+## Source audit
 
-Run in the plugin repository:
+`im-upstream-exceptions.json` records a reason and normalized SHA-256 for each reviewed difference. Any later content change invalidates that approval. `im-upstream-audit.json` records 740 equal paths, 47 reviewed fork differences and 76 fork-only paths, with no missing upstream paths or unreviewed differences.
 
-```powershell
-npm test
+```sh
+npm run audit:im
 npm run build
+npm run test:unit
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/installed/headless_shell npm run test:browser
 node scripts/verify-package.mjs
-node scripts/audit-im-upstream.mjs 34a370bfef1fcf577327b822d2091d2157ded0f8 --check
+npm pack --pack-destination /path/to/output --json
+node scripts/verify-tarball.mjs /path/to/output/tokensapi-dsh-connect-2.10.0.tgz
 ```
 
-The audit needs the pinned upstream Git object available locally. On the next
-sync, fetch and pin the target, compare the entire source tree, explicitly
-review retained differences, update fingerprints, and run both upstream and
-fork tests. Do not infer synchronization from commit titles alone.
+The Git audit requires the pinned upstream object to be fetched locally. For the next sync, compare full source content against the pinned version, review every retained difference, refresh fingerprints and rerun upstream and fork regressions.
 
-Desktop (1200px) and narrow (390px) mock previews were checked with Playwright:
-IM navigation and authorization switch correctly, with no page errors or
-horizontal overflow. This does not replace live account verification.
-Full regression: 2,998 tests, 2,991 passed, 7 platform-dependent skips, 0 failures.
-Build, package verification, and the pinned upstream audit passed.
-No live WhatsApp upload, Telegram bot connection, or macOS run was performed.
+## Verification boundaries
 
-The dependency audit still reports existing transitive `qs` (moderate) and
-`sharp` (high) advisories. This sync does not claim to resolve those advisories.
+The four PitWall recovery regressions use the real controller, runtime, Harness ask and artifact registry with mocked external Host and Telegram endpoints. They cover reports completed during and after a disconnection, genuine shutdown cancellation, timeout, and no retry after uncertain dispatch. They do not use Bot credentials, a model, or a real Telegram chat.
+
+Browser regression passed all eight checks using the existing local Chromium executable. Nine isolated real-Host runtime checks passed against TokensCowork's bundled dsh 0.2.1-rc.2 (workspace/session operations and model catalog). Their temporary DSH_HOME directories were removed; the running TC profile was not used.
+
+The full `check:host` gate did not pass: the installed TC distribution omits `@deepseek-ai/dsh-api-session-controller/lib/types/types.d.ts`, so the preliminary declaration scan stops before the complete contract suite. The nine runtime checks do not replace that full static/runtime contract gate. A real Bot end-to-end check remains for installation.
+
+Final local regression: 5,064 tests, 5,020 passed, 44 skipped, zero failures. Build, package verification, full source audit and verification of the actual 31-file npm tarball passed.
+
+Exact product-version validation: TokensCowork 0.5.25 (dsh 0.1.5-rc.2) and 0.7.10 (dsh 0.2.1-rc.2) each passed 42 runtime/reconnect cases, packed activation, 12 management-route calls, and frontend SlotCore/LocaleRuntime contract probes. See tokenscowork-0.5.25-0.7.10.md for fixture details and boundaries. The npm tarball is unchanged.
+
+## 2.10.1 Telegram opt-in fix
+
+The integration remains pinned to the same upstream commit; this is not another upstream upgrade. Four defaults now require `thinkingTraces === true`: Telegram status, bridge construction, the Telegram settings checkbox, and shared token-client normalization. Existing explicit choices are preserved, and config loading performs no migration. Runtime code for other channels is unchanged from 2.10.0.
+
+`test/channels/telegram/thinking-default.test.mjs` covers omitted/false/true saved configurations through the real controller, runtime and bridge with a mocked Telegram API. It verifies status and settings, no trace messages by default, continued reasoning and tool messages for explicit opt-in, one final answer, and byte-identical config files after reading. The existing new-bot and toggle test now asserts the opt-in default.
+
+The upstream-difference policy records these deliberate changes, including updated fingerprints; it does not claim the four defaults are still equal to upstream.

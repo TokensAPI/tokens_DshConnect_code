@@ -77,7 +77,7 @@ function withoutPrompt(calls) {
     ? [operation, args[0], '(prompt)', args[2]] : [operation, ...args]);
 }
 
-function fixture(channel, { contextEnhancement, onAsk } = {}) {
+function fixture(channel, { contextEnhancement, onAsk, busyMessageMode = 'queue' } = {}) {
   const calls = [];
   const prompts = [];
   const sessions = new Map();
@@ -92,6 +92,7 @@ function fixture(channel, { contextEnhancement, onAsk } = {}) {
     pendingSenders: () => [],
   };
   const harness = {
+    currentBusyMessageMode: () => busyMessageMode,
     ensureRunning: async () => { calls.push(['ensureRunning']); },
     createSession: async () => { calls.push(['createSession']); return 'session-existing'; },
     renameSession: async (sessionId, title) => {
@@ -107,7 +108,13 @@ function fixture(channel, { contextEnhancement, onAsk } = {}) {
       calls.push(['ask', sessionId, content, Object.keys(options).sort()]);
       for (const file of options.files ?? []) {
         const loaded = await file.load({ signal: options.signal });
-        calls.push(['file', file.name, Buffer.from(loaded?.data ?? loaded).toString('hex')]);
+        const chunks = [];
+        if (loaded?.stream) {
+          for await (const chunk of loaded.stream) chunks.push(Buffer.from(chunk));
+        } else {
+          chunks.push(Buffer.from(loaded?.data ?? loaded));
+        }
+        calls.push(['file', file.name, Buffer.concat(chunks).toString('hex')]);
       }
       return onAsk ? onAsk({ sessionId, content, options, prompts }) : 'answer unchanged';
     },
@@ -166,6 +173,9 @@ function fixture(channel, { contextEnhancement, onAsk } = {}) {
       // text presentation; the default interaction cards are tested in the
       // Feishu bridge tests.
       interactionCards: false,
+      // Likewise pin flat conversations: this suite is about enhancement, and
+      // the group fixture mentions the bot (which would open a topic session).
+      mentionTopicReply: false,
       channel: {}, client: { im: { v1: {
         message: { create: async (request) => {
           calls.push(['createMessage', request]);
@@ -203,11 +213,12 @@ function fixture(channel, { contextEnhancement, onAsk } = {}) {
         guild_id: group ? 'guild' : undefined, content: text, mentions: [{ id: 'bot' }],
       }, 'bot');
     } else if (channel === 'whatsapp') {
+      const accountJid = '16505550123@s.whatsapp.net';
       const raw = { key: { id: String(id), remoteJid: group ? 'chat@g.us' : `${actor}@s.whatsapp.net`,
         participant: group ? `${actor}@s.whatsapp.net` : undefined, fromMe: false },
-      message: { extendedTextMessage: { text, contextInfo: { mentionedJid: ['bot@s.whatsapp.net'] } } } };
+      message: { extendedTextMessage: { text, contextInfo: { mentionedJid: [accountJid] } } } };
       nameValue(raw, 'pushName');
-      value = normalizeWhatsappMessage(raw, 'bot@s.whatsapp.net');
+      value = normalizeWhatsappMessage(raw, accountJid);
     } else if (channel === 'slack') {
       value = normalizeSlackEvent({ event_id: String(id), event: { type: group ? 'app_mention' : 'message',
         ts: String(id), channel: 'chat', channel_type: group ? 'channel' : 'im', user: actor,
@@ -348,6 +359,11 @@ for (const channel of CHANNELS) {
         ...(channel === 'slack' && kind === 'group' ? { threadId: 'thread-existing' } : {}),
         botId: `${channel}_internal`,
       };
+      // The fixture enables every field, so `sentAt` is selected here too, but
+      // this fixture is a channel that never published a moment: the field is
+      // omitted rather than filled with the local clock, which the model could
+      // not tell apart from a real send time. The weixin bridge publishes one
+      // through `withSentAt`, and its own tests assert the rendered value.
       assert.deepEqual(sourceOf(current.prompts[0]), expected);
       assert.ok(textOf(current.prompts[0]).endsWith('\n\nhello'));
       assert.doesNotMatch(textOf(current.prompts[0]), /source_guidance|private-token|private-secret/);
@@ -674,3 +690,36 @@ test('Feishu topics expose chatId always and threadId only when the event carrie
   assert.equal(sourceOf(current.prompts[2]).chatId, 'chat');
   assert.equal(Object.hasOwn(sourceOf(current.prompts[2]), 'threadId'), false);
 });
+
+for (const channel of CHANNELS) {
+  for (const variant of ['image', 'file', 'mixed', 'quote']) {
+    test(`${channel}: steer mode keeps ${variant} on the full ordinary input path`, async (t) => {
+      const release = deferred();
+      t.after(() => release.resolve());
+      const f = fixture(channel, {
+        busyMessageMode: 'steer',
+        onAsk: async ({ prompts }) => {
+          if (prompts.length === 1) await release.promise;
+          return 'answer';
+        },
+      });
+      const first = f.bridge.accept(f.event(801, 'long task'));
+      await eventually(() => f.prompts.length === 1);
+      const next = f.bridge.accept(f.event(802, 'keep full input',
+        variant === 'quote' ? { quote: true } : { media: variant }));
+      await new Promise((resolve) => setImmediate(resolve));
+      assert.equal(f.prompts.length, 1);
+      release.resolve();
+      await Promise.all([first, next]);
+      assert.equal(f.prompts.length, 2, 'attachments/quotes must reach the original prompt builder');
+      const baseline = fixture(channel);
+      await baseline.bridge.accept(baseline.event(801, 'long task'));
+      await baseline.bridge.accept(baseline.event(802, 'keep full input',
+        variant === 'quote' ? { quote: true } : { media: variant }));
+      assert.deepEqual(f.prompts[1], baseline.prompts[1], 'the complete prompt is unchanged by steer mode');
+      assert.deepEqual(f.calls.filter(([op]) => op === 'file'), baseline.calls.filter(([op]) => op === 'file'),
+        'all attachment bytes are preserved');
+      if (variant === 'quote') assert.match(textOf(f.prompts[1]), /dsh_im_reply_to/);
+    });
+  }
+}

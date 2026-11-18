@@ -19,7 +19,8 @@ export async function verifyTarball(filename, expected) {
   } });
   assert.deepEqual(invalid, [], 'Tarball must not contain links or duplicate entries');
   for (const name of contents.keys()) {
-    assert.ok(/^package\/(?:assets\/[a-zA-Z0-9_-]+\.(?:png|svg|webp)|bin\/[a-zA-Z0-9_-]+\.mjs|lib\/[a-zA-Z0-9_-]+\.js|docs\/(?:README\.en-US\.md|host-compatibility\.md|images\/[a-zA-Z0-9_-]+\.(?:png|jpg))|locale\/[a-z]{2,3}(?:-[A-Za-z0-9]+)*\.json|README\.md|LICENSE|THIRD_PARTY_NOTICES\.md|cordis\.patch\.yml|package\.json)$/.test(name), `Unexpected packaged path: ${name}`);
+    if (name === 'package/assets/dingtalk-menu-template.json') continue;
+    assert.ok(/^package\/(?:assets\/(?:sponsors\/)?[a-zA-Z0-9_-]+\.(?:png|jpg|svg|webp)|bin\/[a-zA-Z0-9_-]+\.mjs|lib\/[a-zA-Z0-9_-]+\.js|docs\/(?:README\.en-US\.md|host-compatibility\.md|client-integration\.md|preset-workspaces\.md|images\/[a-zA-Z0-9_-]+\.(?:png|jpg))|locale\/[a-z]{2,3}(?:-[A-Za-z0-9]+)*\.json|PROACTIVE_DELIVERY(?:\.en)?\.md|README\.md|LICENSE|THIRD_PARTY_NOTICES\.md|cordis\.patch\.yml|package\.json)$/.test(name), `Unexpected packaged path: ${name}`);
   }
   assert.ok(contents.has('package/package.json'), 'Missing package manifest');
   const manifest = JSON.parse(contents.get('package/package.json'));

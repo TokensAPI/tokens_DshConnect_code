@@ -177,7 +177,7 @@ test('connection center separates IM bots and app authorization', async () => {
   assert.match(styles, /\.dim-modeTab\[data-active="true"\]::after[^}]*height: 2px;[^}]*background: var\(--dsw-alias-label-primary, #1f2329\);/);
   assert.match(styles, /\.dim-rail \{[^}]*display: grid;[^}]*align-content: start;[^}]*gap: 7px;/);
   assert.match(styles, /\.dim-channel \{[^}]*min-height: 44px;[^}]*border-radius: 8px;/);
-  assert.equal((markup.match(/role="tab"/g) ?? []).length, 14);
+  assert.equal((markup.match(/role="tab"/g) ?? []).length, 15);
   assert.equal((markup.match(/aria-selected="true"/g) ?? []).length, 2);
   assert.doesNotMatch(markup, /role="switch"|type="checkbox"/);
   assert.doesNotMatch(markup, /dim-chevron|扫码绑定<\/small>|扫码接入<\/small>/);
@@ -236,6 +236,7 @@ test('connection center category switch reveals app authorization without a long
     'WhatsApp',
     '企业微信应用',
     'iMessage',
+    'Matrix',
     'AI Office',
   ]);
 
@@ -435,7 +436,7 @@ test('Feishu prioritizes an existing reusable application over creating another 
 
 test('every shipped Chinese client string has an English projection', async () => {
   const paths = (await readdir(CLIENT_SOURCE_DIRECTORY_URL, { recursive: true }))
-    .filter((path) => path.endsWith('.js') && path !== 'i18n.js');
+    .filter((path) => path.endsWith('.js') && !path.startsWith('i18n'));
   const sources = await Promise.all(paths.map((path) =>
     readFile(new URL(path, CLIENT_SOURCE_DIRECTORY_URL), 'utf8')));
   const strings = new Set();
@@ -504,6 +505,7 @@ test('client registers a live bilingual locale seat and directory picker for the
     const dictionaryEffect = effects.find((entry) => entry.label === 'im-settings: bilingual dictionaries');
     assert.ok(dictionaryEffect);
     dictionaryEffect.install();
+    effects.find((entry) => entry.label === 'im-settings: client panel service').install();
 
     assert.deepEqual(clientInject, ['slots', 'connection', 'locale', 'workspaces']);
     assert.equal(dictionaries[0].namespace, IM_LOCALE_NAMESPACE);

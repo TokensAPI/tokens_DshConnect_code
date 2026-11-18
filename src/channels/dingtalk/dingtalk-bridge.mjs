@@ -1,3 +1,4 @@
+import { BusyMessageDispatcher, canAutomaticallySteer } from '../shared/busy-message-dispatcher.mjs';
 import { createDeferredDeliveryCoordinator, deferredOutcomeText } from '../shared/deferred-delivery-coordinator.mjs';
 import {
   DINGTALK_DONE_REACTION_NAME,
@@ -15,6 +16,7 @@ import {
 } from '../shared/harness-question.mjs';
 import { HarnessApprovalQueue } from '../shared/harness-approval.mjs';
 import { runCompactCommand } from '../shared/compact-command.mjs';
+import { isClearCommand, runClearCommand } from '../shared/clear-command.mjs';
 import { isHistoryCommand, runHistoryCommand } from '../shared/history-command.mjs';
 import {
   isControlCommand,
@@ -28,7 +30,7 @@ import {
   isPresetCommand,
   runPresetCommand,
 } from '../shared/preset-command.mjs';
-import { runWorkspaceCommand } from '../shared/workspace-command.mjs';
+import { conversationSessionWorkspace, runWorkspaceCommand } from '../shared/workspace-command.mjs';
 import { askInWorkspaceSession } from '../shared/workspace-session.mjs';
 import {
   captureContextEnhancement,
@@ -65,6 +67,7 @@ import {
 import { recoverAssistantTextByTimestamp } from '../shared/session-reply-recovery.mjs';
 import { DINGTALK_RECENT_OUTBOUND_MATCH_TOLERANCE_MS } from './state-store.mjs';
 import {
+  messageFailureDiagnostic,
   channelDeliveryFailure,
   clearLastMessageFailure,
   messageFailureText,
@@ -86,6 +89,7 @@ const HELP_TEXT_LINES = [
   '/m 或 /menu  打开下拉操作菜单',
   '/new  开启一个全新会话',
   '/compact  压缩当前会话的较早上下文',
+  '/clear  清空当前会话上下文（保留 Session 绑定和历史记录）',
   '/history [数量]  查看最近历史消息（默认 3 条，最多 5 条）',
   '/workspace 工作区序号或绝对路径  切换工作区',
   '/workspacelist  列出工作区绝对路径',
@@ -538,6 +542,7 @@ export class DingtalkHarnessBridge {
   #maxMessageChars;
   #signal;
   #queues = new Map();
+  #busyMessages = new BusyMessageDispatcher();
   #pendingInteractions = new Map();
   #interactionKeys = new Map();
   #interactionTasks = new Set();
@@ -596,7 +601,7 @@ export class DingtalkHarnessBridge {
     return structuredClone(this.#status);
   }
 
-  accept(message, { contextSnapshot } = {}) {
+  accept(message, { contextSnapshot, busyMessageMode } = {}) {
     if (this.#signal?.aborted) return Promise.resolve();
     const messageId = nonEmptyString(message?.msgId);
     const sender = senderStaffId(message);
@@ -715,6 +720,7 @@ export class DingtalkHarnessBridge {
     const commandRunner = isDingtalkMenuCommand(commandText)
       && !hasInboundFiles(promptMessage) && !hasInboundImages(promptMessage)
       ? async () => { await this.#showMenu(message, key); }
+      : isClearCommand(commandText) ? runClearCommand
       : isHistoryCommand(commandText) ? runHistoryCommand
       : hasInboundFiles(promptMessage) ? null : isControlCommand(commandText)
       ? runControlCommand
@@ -740,7 +746,7 @@ export class DingtalkHarnessBridge {
         const failure = setLastMessageFailure(this.#status, error);
         this.#logger.error?.(
           `[dsh-dingtalk] failed to process a command [${failure.referenceId}]`,
-          safeErrorDiagnostic(error),
+          messageFailureDiagnostic(error, failure),
         );
         return this.#send(sessionWebhook, messageFailureText(failure), this.#atUsersFor(message)).catch(() => undefined);
       }).finally(() => {
@@ -833,7 +839,28 @@ export class DingtalkHarnessBridge {
       pending.queue = current;
       return finish(current);
     }
-    return finish(this.#enqueueMessage(message, messageId, sender, key, { statusReaction }));
+    return finish(this.#busyMessages.dispatch({
+      key, messageId, text: commandText, mode: busyMessageMode,
+      onFailure: (error) => this.#finishStatusReaction(statusReaction,
+        this.#signal?.aborted || error?.code === 'turn-stopped' ? 'clear' : 'error'),
+      eligible: () => Boolean(sessionWebhook) && addressed && String(message.msgtype).toLowerCase() === 'text'
+        && !hasInboundImages(promptMessage) && !hasInboundFiles(promptMessage)
+        && !hasReplyReference(promptMessage) && !isDingtalkMenuCommand(commandText)
+        && canAutomaticallySteer(this.#accessPolicy, conversationType, sender),
+      harness: this.#harness, state: this.#state, status: this.#status,
+      signal: this.#signal, control: { owner: this, key }, logger: this.#logger,
+      acceptedMessageIds: this.#acceptedMessageIds,
+      pendingInteraction: () => this.#pendingInteractions.has(key) || this.#approvals.hasPending(key),
+      enhancement: {
+        snapshot: this.#acceptedMessageIds.get(messageId),
+        source: () => ({ channel: 'dingtalk', senderId: sender, senderName: message.senderNick,
+          conversationTitle: message.conversationTitle, chatId: message.conversationId }),
+      },
+      isQueued: () => this.#queues.has(key),
+      enqueue: (options) => this.#enqueueMessage(message, messageId, sender, key, { ...options, statusReaction }),
+      send: (reply) => sessionWebhook && addressed
+        ? this.#send(sessionWebhook, reply, this.#atUsersFor(message)) : Promise.resolve(),
+    }));
   }
 
   async #showMenu(message, key) {
@@ -913,8 +940,7 @@ export class DingtalkHarnessBridge {
       });
       return;
     }
-    const sessionWorkspace = typeof this.#harness.currentConversationWorkspace === 'function'
-      ? this.#harness.currentConversationWorkspace(key) : this.#harness.currentWorkspace?.();
+    const sessionWorkspace = await conversationSessionWorkspace(this.#harness, key, { signal: this.#signal });
     if (entry.workspace !== this.#harness.currentWorkspace?.()
       || entry.sessionWorkspace !== sessionWorkspace
       || entry.sessionId !== this.#state.sessionFor(key)) {
@@ -932,6 +958,7 @@ export class DingtalkHarnessBridge {
       result = { message: helpText() };
     } else {
       result = await runWorkspaceCommand(command, this.#harness, key)
+        ?? await runClearCommand(command, this.#harness, this.#state, key, options)
         ?? await runCompactCommand(command, this.#harness, this.#state, key, options)
         ?? await runControlCommand(command, this.#harness, this.#state, key, options)
         ?? await runHistoryCommand(command, this.#harness, this.#state, key, options)
@@ -1132,6 +1159,7 @@ export class DingtalkHarnessBridge {
   }
 
   async waitForIdle() {
+    await this.#busyMessages.whenIdle();
     await Promise.allSettled([
       ...this.#queues.values(),
       ...[...this.#pendingInteractions.values()].flatMap((pending) => (
@@ -1161,6 +1189,7 @@ export class DingtalkHarnessBridge {
         hasFiles: hasInboundFiles(prompt),
         pendingInteraction: this.#pendingInteractions.has(key)
           || this.#approvals.hasPending(key),
+        busy: this.#queues.has(key) || this.#batchInputs.status(key).phase !== 'idle',
         control: { owner: this, key },
         deferredDelivery: this.#deferred,
         enhancement: captureContextEnhancementSource(
@@ -1207,7 +1236,7 @@ export class DingtalkHarnessBridge {
       const failure = setLastMessageFailure(this.#status, error);
       this.#logger.error?.(
         `[dsh-dingtalk] failed to process a batch input message [${failure.referenceId}]`,
-        safeErrorDiagnostic(error),
+        messageFailureDiagnostic(error, failure),
       );
       await this.#send(sessionWebhook, messageFailureText(failure)).catch(() => undefined);
     }).finally(() => {
@@ -1338,7 +1367,7 @@ export class DingtalkHarnessBridge {
         signal: this.#signal,
       });
       let content = hasInboundImages(modelMessage) || hasReply
-        ? await promptContentForInboundMessage(modelMessage, { signal: this.#signal })
+        ? await promptContentForInboundMessage(modelMessage, { signal: this.#signal, deferImages: true })
         : undefined;
       const snapshot = this.#acceptedMessageIds.get(messageId);
       let contextEnhanced = false;
@@ -1369,6 +1398,7 @@ export class DingtalkHarnessBridge {
         if (cardStarted) cardStartedAt = startedAt;
       }
       const { answer, artifacts = [] } = await askInWorkspaceSession({
+        onNotice: (notice) => this.#send(sessionWebhook, notice, this.#atUsersFor(message)),
         deferredDelivery: () => ({ coordinator: this.#deferred, target: { ...cardTarget(message, sender), robotCode: this.#clientId } }),
         harness: this.#harness,
         state: this.#state,
@@ -1395,6 +1425,7 @@ export class DingtalkHarnessBridge {
           }),
           onInteractionResolved: (resolution) => this.#handleInteractionResolved(resolution),
           files: modelMessage.files,
+          images: modelMessage.images,
         },
       });
       if (batchSubmission) {
@@ -1486,7 +1517,7 @@ export class DingtalkHarnessBridge {
       });
       this.#logger.error?.(
         `[dsh-dingtalk] failed to process an inbound message [${failure.referenceId}]`,
-        safeErrorDiagnostic(error),
+        messageFailureDiagnostic(error, failure),
       );
       try {
         const errorText = messageFailureText(failure);
@@ -1643,6 +1674,12 @@ export class DingtalkHarnessBridge {
         this.#logger.error?.('[dsh-dingtalk] failed to send an interaction retry notice');
       }
     }
+  }
+
+  async presentSessionSyncApproval(interaction, context, options = {}) {
+    return this.#approvals.handleSessionSyncRequested(interaction, context, {
+      ...options, runtimeSignal: this.#signal, accessPolicy: this.#accessPolicy,
+    });
   }
 
   async #handleInteraction(interaction, {

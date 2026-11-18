@@ -1,3 +1,5 @@
+import { normalizeBusyMessageMode } from '../../../../src/channels/shared/message-mode.mjs';
+import { normalizeConnectionError as normalizeTestError } from '../../connection-error.js';
 import { normalizeWeixinDiagnosticDetails } from '../../../../src/channels/weixin/diagnostic-details.mjs';
 import { normalizeBotAlias } from '../../../../src/channels/shared/bot-alias.mjs';
 import { normalizeAgentPresetCatalog, normalizeAgentPresetId, SET_AGENT_PRESET_ENDPOINT } from '../../agent-preset.js';
@@ -19,6 +21,7 @@ export const WEIXIN_ENDPOINTS = Object.freeze({
   setModel: SET_MODEL_ENDPOINT,
   setAgentPreset: SET_AGENT_PRESET_ENDPOINT,
   setContextEnhancement: 'bot.context-enhancement.set',
+  setBusyMessageMode: 'bot.message-mode.set',
   setAccessPolicy: 'bot.access-policy.set',
   setAlias: 'bot.alias.set',
 });
@@ -55,7 +58,7 @@ function normalizeTestMessage(value) {
   const code = value.code === 'test-target-unavailable'
     ? 'test-target-unavailable'
     : 'test-message-failed';
-  return { sent: false, code };
+  return { sent: false, code, ...(value.error ? { error: normalizeTestError(value.error) } : {}) };
 }
 
 export function normalizeConnectionError(value, fallbackCode = 'WEIXIN_ERROR', fallbackMessage = '微信操作失败，请稍后重试') {
@@ -153,7 +156,7 @@ function normalizeBot(value) {
     workspace: string(value.workspace).slice(0, 4_096),
     model: normalizeModelSelection(value.model),
     agentPreset: normalizeAgentPresetId(value.agentPreset),
-    contextEnhancement: normalizeContextEnhancementConfig(value.contextEnhancement),
+    busyMessageMode: normalizeBusyMessageMode(value.busyMessageMode),    contextEnhancement: normalizeContextEnhancementConfig(value.contextEnhancement),
     ...(Object.hasOwn(value, 'accessPolicy')
       ? { accessPolicy: normalizeAccessPolicy(value.accessPolicy) }
       : {}),

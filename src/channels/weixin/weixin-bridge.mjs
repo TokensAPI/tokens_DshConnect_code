@@ -1,3 +1,4 @@
+import { BusyMessageDispatcher, canAutomaticallySteer } from '../shared/busy-message-dispatcher.mjs';
 import { createDeferredDeliveryCoordinator, deferredOutcomeText } from '../shared/deferred-delivery-coordinator.mjs';
 import {
   DEFAULT_WEIXIN_MAX_MESSAGE_CHARS,
@@ -21,6 +22,7 @@ import {
   isBatchInputCommand,
 } from '../shared/batch-input.mjs';
 import { runCompactCommand } from '../shared/compact-command.mjs';
+import { isClearCommand, runClearCommand } from '../shared/clear-command.mjs';
 import { isHistoryCommand, runHistoryCommand } from '../shared/history-command.mjs';
 import {
   isControlCommand,
@@ -40,6 +42,7 @@ import {
   captureContextEnhancement,
   captureContextEnhancementSource,
   enhanceContextContent,
+  withSentAt,
 } from '../shared/context-enhancement.mjs';
 import {
   hasInboundImages,
@@ -63,6 +66,7 @@ import {
 } from '../shared/semantic/delivery.mjs';
 import { recoverAssistantTextByTimestamp } from '../shared/session-reply-recovery.mjs';
 import {
+  messageFailureDiagnostic,
   channelDeliveryFailure,
   clearLastMessageFailure,
   messageFailureText,
@@ -89,6 +93,7 @@ const HELP_TEXT = () => [
   t('直接发送文字、图片、文件或带文字识别结果的语音即可继续当前会话。'),
   t('/new  开启一个全新会话'),
   t('/compact  压缩当前会话的较早上下文'),
+  t('/clear  清空当前会话上下文（保留 Session 绑定和历史记录）'),
   t('/history [数量]  查看最近历史消息（默认 3 条，最多 5 条）'),
   t('/workspace 工作区序号或绝对路径  切换工作区'),
   t('/workspacelist  列出工作区绝对路径'),
@@ -311,6 +316,7 @@ export class WeixinHarnessBridge {
   #typingKeepaliveMs;
   #signal;
   #queues = new Map();
+  #busyMessages = new BusyMessageDispatcher();
   #pendingInteractions = new Map();
   #interactionKeys = new Map();
   // Keep the accepted configuration through the existing queue/reply lifecycle.
@@ -397,9 +403,20 @@ export class WeixinHarnessBridge {
       this.#acceptedMessageIds.set(messageId, null);
       return this.#finishAccessDecision(messageId, sender, message, access);
     }
-    this.#acceptedMessageIds.set(messageId, captureContextEnhancement(
+    // Capture through the *source* entry point, not the bare config snapshot:
+    // the enhancement that renders the user message is read back from this map
+    // at prompt time, and a rendered `sentAt` selection needs the factory that
+    // carries the moment. Nothing is read here; the thunk runs only when that
+    // render selects `sentAt`.
+    this.#acceptedMessageIds.set(messageId, captureContextEnhancementSource(
       this.#contextEnhancement,
       'direct',
+      withSentAt(
+        () => ({ channel: 'weixin', senderId: sender, chatId: sender }),
+        // A thunk: the platform send time (falling back to the iLink message-id
+        // clock) is only decoded when a `sentAt` selection actually renders.
+        () => message?.create_time_ms ?? weixinMessageTimestampMs(messageId),
+      ),
     ));
     if (sender === this.#ownerUserId) {
       rememberConnectionTestTarget(this.#state, { toUserId: sender });
@@ -444,7 +461,8 @@ export class WeixinHarnessBridge {
         );
       }
     }
-    const commandRunner = isHistoryCommand(commandText) ? runHistoryCommand
+    const commandRunner = isClearCommand(commandText) ? runClearCommand
+      : isHistoryCommand(commandText) ? runHistoryCommand
       : hasWeixinFileItems(message) ? null : isControlCommand(commandText)
       ? runControlCommand
       : (isModelCommand(commandText)
@@ -467,7 +485,7 @@ export class WeixinHarnessBridge {
         const failure = setLastMessageFailure(this.#status, error);
         this.#logger.error?.(
           `[dsh-weixin] failed to process a command [${failure.referenceId}]:`,
-          error,
+          messageFailureDiagnostic(error, failure),
         );
         return this.#sendOutOfBand(key, sender, messageFailureText(failure), contextToken, runId)
           .catch(() => undefined);
@@ -529,7 +547,20 @@ export class WeixinHarnessBridge {
       pending.queue = current;
       return current;
     }
-    return this.#enqueueMessage(message, messageId, key);
+    return this.#busyMessages.dispatch({
+      key, messageId, text: commandText,
+      eligible: () => isNativeWeixinText(message) && !extractWeixinReplyReference(message)
+        && canAutomaticallySteer(this.#accessPolicy, 'direct', sender),
+      harness: this.#harness, state: this.#state, status: this.#status,
+      signal: this.#signal, control: { owner: this, key }, logger: this.#logger,
+      acceptedMessageIds: this.#acceptedMessageIds,
+      pendingInteraction: () => this.#pendingInteractions.has(key) || this.#approvals.hasPending(key),
+      enhancement: this.#acceptedMessageIds.get(messageId),
+      isQueued: () => this.#queues.has(key),
+      enqueue: (options) => this.#enqueueMessage(message, messageId, key, options),
+      send: (reply) => this.#sendOutOfBand(key, sender, reply, contextToken, runId),
+      onError: (error) => this.#handleInteractionFailure(message, messageId, error),
+    });
   }
 
   #enqueueMessage(message, messageId, key, {
@@ -623,7 +654,7 @@ export class WeixinHarnessBridge {
       const failure = setLastMessageFailure(this.#status, error);
       this.#logger.error?.(
         `[dsh-weixin] failed to process a batch input message [${failure.referenceId}]:`,
-        error,
+        messageFailureDiagnostic(error, failure),
       );
       await this.#sendOutOfBand(key, sender, messageFailureText(failure), contextToken, runId)
         .catch(() => undefined);
@@ -671,6 +702,7 @@ export class WeixinHarnessBridge {
   }
 
   async waitForIdle() {
+    await this.#busyMessages.whenIdle();
     await Promise.allSettled([
       ...this.#queues.values(),
       ...[...this.#pendingInteractions.values()].flatMap((pending) => (
@@ -711,12 +743,20 @@ export class WeixinHarnessBridge {
       hasFiles: hasWeixinFileItems(message),
       pendingInteraction: this.#pendingInteractions.has(key)
         || this.#approvals.hasPending(key),
+      busy: this.#queues.has(key) || this.#batchInputs.status(key).phase !== 'idle',
       control: { owner: this, key },
       deferredDelivery: this.#deferred,
       enhancement: captureContextEnhancementSource(
         this.#contextEnhancement,
         'direct',
-        () => ({ channel: 'weixin', senderId: sender, chatId: sender }),
+        // The moment rides on the factory as a thunk, so a local command that
+        // never renders a source block -- and a scope that is off or does not
+        // select `sentAt` -- reads nothing from the inbound message.
+        withSentAt(
+          () => ({ channel: 'weixin', senderId: sender, chatId: sender }),
+          // Platform send time, falling back to the iLink message-id clock.
+          () => message?.create_time_ms ?? weixinMessageTimestampMs(messageId),
+        ),
       ),
     });
     if (result?.stopped) {
@@ -814,22 +854,22 @@ export class WeixinHarnessBridge {
       await this.#startTyping(sender, contextToken);
       try {
         let content = hasImages || hasReply
-          ? await promptContentForInboundMessage(promptMessage, { signal: this.#signal })
+          ? await promptContentForInboundMessage(promptMessage, { signal: this.#signal, deferImages: true })
           : undefined;
-        const snapshot = this.#acceptedMessageIds.get(messageId);
+        const captured = this.#acceptedMessageIds.get(messageId);
         let contextEnhanced = false;
-        if (snapshot) {
+        if (captured) {
           const originalContent = content ?? text;
-          content = enhanceContextContent(originalContent, snapshot, () => ({
-            channel: 'weixin',
-            senderId: sender,
-            chatId: sender,
-          }));
+          // The capture already carries the moment its own source published, so
+          // `enhanceContextContent` accepts it as-is: passing only `.snapshot`
+          // here would drop `sentAt` and silently render no block at all.
+          content = enhanceContextContent(originalContent, captured);
           contextEnhanced = content !== originalContent;
         }
         await this.#state.markSeen(messageId);
         promptRecorded = true;
         ({ answer, artifacts = [] } = await askInWorkspaceSession({
+          onNotice: (notice) => this.#send(sender, notice, contextToken, runId, { stopTyping: false }),
           deferredDelivery: () => ({ coordinator: this.#deferred, target: { toUserId: sender } }),
           harness: this.#harness,
           state: this.#state,
@@ -837,7 +877,7 @@ export class WeixinHarnessBridge {
           text,
           content,
           titleText: batchSubmission?.title,
-          sourceGuidance: snapshot?.config?.guidance,
+          sourceGuidance: captured?.snapshot?.config?.guidance,
           contextEnhanced,
           createOptions: { signal: this.#signal },
           existsOptions: { signal: this.#signal },
@@ -857,6 +897,7 @@ export class WeixinHarnessBridge {
               await this.#resumeTyping(key, sender, contextToken);
             },
             files: promptMessage.files,
+            images: promptMessage.images,
           },
         }));
         if (batchSubmission) {
@@ -934,7 +975,7 @@ export class WeixinHarnessBridge {
       });
       this.#logger.error?.(
         `[dsh-weixin] failed to process an inbound message [${failure.referenceId}]:`,
-        error,
+        messageFailureDiagnostic(error, failure),
       );
       try {
         await this.#send(
@@ -1080,6 +1121,12 @@ export class WeixinHarnessBridge {
         pending.runId,
       ).catch(() => undefined);
     }
+  }
+
+  async presentSessionSyncApproval(interaction, context, options = {}) {
+    return this.#approvals.handleSessionSyncRequested(interaction, context, {
+      ...options, runtimeSignal: this.#signal, accessPolicy: this.#accessPolicy,
+    });
   }
 
   async #handleInteraction(interaction, {
@@ -1251,7 +1298,7 @@ export class WeixinHarnessBridge {
     const failure = setLastMessageFailure(this.#status, error);
     this.#logger.error?.(
       `[dsh-weixin] failed to process an interaction reply [${failure.referenceId}]:`,
-      error,
+      messageFailureDiagnostic(error, failure),
     );
     if (!this.#state.hasSeen(messageId)) {
       await this.#state.markSeen(messageId).catch(() => undefined);

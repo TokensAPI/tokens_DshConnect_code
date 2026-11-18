@@ -66,7 +66,7 @@ function reply(response) {
 }
 
 function workspaceDirectory() {
-  const directory = mkdtempSync(join(tmpdir(), 'dsh-connect-live-'));
+  const directory = mkdtempSync(join(process.env.DSH_HOME ?? tmpdir(), 'dsh-connect-live-'));
   writeFileSync(join(directory, 'README.md'), '# dsh-connect live host contract\n');
   return directory;
 }

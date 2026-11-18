@@ -1,149 +1,213 @@
 {
-  "upstream": "34a370bfef1fcf577327b822d2091d2157ded0f8",
+  "upstream": "c826bfa415d79669d8ebba206cf4a1eac554d8e2",
   "files": {
     "plugin-src/client/build.mjs": {
       "reason": "Fork package identity and build externals, including personal authorization.",
       "sha256": "79d39eddbb48b56ce8752017beeb449fdc9f54f964900d98e6b6d314caa65538"
     },
-    "plugin-src/host/build.mjs": {
-      "reason": "Fork package identity and build externals, including personal authorization.",
-      "sha256": "b5e9bc1f2f4941a55d4a6646c2596595ce63a181c0a090dafd8090f586b12f0f"
-    },
     "plugin-src/client/channels/feishu/api.js": {
       "reason": "Shared Feishu application service and reusable application provisioning.",
-      "sha256": "26995520d0865d97e67e0bd00478e72130b2f9a453013edce540073da4facc0c"
+      "sha256": "d1b0eab0fa67d805b0d1b02add6fba24011c97225e186a81425797c6feca219b"
     },
     "plugin-src/client/channels/feishu/index.js": {
       "reason": "Shared Feishu application service and reusable application provisioning.",
-      "sha256": "8cabe8c9ae56996f791ee24a3e164e1e166e5d98dab1c8f2fd0622236b5ef44d"
-    },
-    "plugin-src/host/channels/feishu/production.mjs": {
-      "reason": "Shared Feishu application service and reusable application provisioning.",
-      "sha256": "7d724b485cbcfe0ca8f4b726dad202cfa013e1e5fcbc00fd8ae3ffe94ad35f9f"
-    },
-    "plugin-src/host/channels/feishu/rpc.mjs": {
-      "reason": "Shared Feishu application service and reusable application provisioning.",
-      "sha256": "0f616614787fa0848acb3887b161981719be60038e1db5a65236dd625870617f"
-    },
-    "src/channels/feishu/multi-bot-controller.mjs": {
-      "reason": "Shared Feishu application service and reusable application provisioning.",
-      "sha256": "40878b9d4ffa77cc8c8e9f9873892efc143643f3c85216de7ece4ab34c3d03b9"
+      "sha256": "95a82d861406b168d3604da054c93fd9b3d0525251683917d606c14713edeb93"
     },
     "plugin-src/client/channels/qq/index.js": {
       "reason": "Retain manual QQ credentials; the QR SDK is UNLICENSED and remains excluded.",
-      "sha256": "b9d78b71790b392b2fe46b0f7c4485fde6629b49891dd67ad0357adb75f3ee36"
+      "sha256": "61c6905e97f3567da4e988bbc2338efe79041c8959bb7f8b4f7fe32b11a793c7"
     },
-    "src/channels/qq/qr-auth.mjs": {
-      "reason": "Retain manual QQ credentials; the QR SDK is UNLICENSED and remains excluded.",
-      "sha256": "c4460f9d3fd1de7a8987fb8c898897dcf228e4eaecd305481d5ce52b685247ae"
-    },
-    "test/channels/qq/client-ui.test.mjs": {
-      "reason": "Retain manual QQ credentials; the QR SDK is UNLICENSED and remains excluded.",
-      "sha256": "5c1fcff4a0e333fca3d609afefdf06b139b5001a018dc86cf4e1474b33270bc8"
+    "plugin-src/client/i18n-ru.js": {
+      "reason": "Preserve Russian translation for the dynamic unauthorized reason when the fork merges English fallbacks.",
+      "sha256": "0929a157bfa91d93117194d976feb123d7db551979765780ba11a61a9a95fba5"
     },
     "plugin-src/client/i18n.js": {
-      "reason": "Connection center, personal authorization translations and existing visual treatment.",
-      "sha256": "b543846f7f8fe977b996e2184e275d9567fa2b2db9f4acad674e462dc22b36f8"
+      "reason": "Preserve connection-center and personal-authorization translations, dynamic template localization, and explicit English fallbacks for fork-only Russian keys.",
+      "sha256": "eb60af1bf982baf803d3f8454896df3b6a7d7193ded4de2051908ea827555545"
     },
     "plugin-src/client/index.js": {
       "reason": "Connection center, personal authorization translations and existing visual treatment.",
-      "sha256": "22f575c33a36ba5fbcbbcae047e22af310f1b0548b4ada725c01ff907db5b067"
+      "sha256": "4cb5af939ebe721979512bacaf3a2cd5f57502ab1ce241457a969ec12ba5329a"
+    },
+    "plugin-src/client/session-channel-logos.js": {
+      "reason": "Preserve upstream logos and lifecycle; suppress inherited text shadows only on visually replaced channel titles.",
+      "sha256": "ade2eca478db422202f00f1b82014e41882d022765e200be4b3fae32475da44c"
     },
     "plugin-src/client/styles.js": {
       "reason": "Connection center, personal authorization translations and existing visual treatment.",
-      "sha256": "d994542ce914518625ed545b4416d761c5e12c67cb20638a9b861f88f7f0e768"
+      "sha256": "b2d98df51834be8238cbffd87aa2ce144343780e4ca54cdb5db84af01d6a6b30"
+    },
+    "plugin-src/client/update-panel.js": {
+      "reason": "Manual updates target @tokensapi/dsh-connect on the private registry; retain profile/version safety and latest fallback notice.",
+      "sha256": "004abddc71fe4a8c1a211404417e4c5b1ac3a1a86906c30598367679da7c2495"
     },
     "plugin-src/client/upstream-im.js": {
-      "reason": "Upstream settings embedded under connection center with a settings registration hook.",
-      "sha256": "4515f216433c6bfc612e8c8abc4a16df131bc7d14d11808f855e720f4f56abcd"
+      "reason": "Embed upstream settings and panel service inside the connection-center wrapper through explicit Panel, dependency and registration hooks while retaining locale lifecycle.",
+      "sha256": "4c5a123bdc0b2164a28699c98aff0ff7c25401c390098e5c57204a0ad6b249c4"
+    },
+    "plugin-src/host/build.mjs": {
+      "reason": "Fork package identity and build externals, including personal authorization.",
+      "sha256": "74130e659742f3f6cbbc6f1d85453d3ceee763faa0c170463cf1c7440767ef92"
+    },
+    "plugin-src/host/channels/feishu/production.mjs": {
+      "reason": "Shared Feishu application service and reusable application provisioning.",
+      "sha256": "f10d4d115f166a48677a96f6d79308dbd5056e916d36cc9b8e9e150aa3645e6d"
+    },
+    "plugin-src/host/channels/feishu/rpc.mjs": {
+      "reason": "Shared Feishu application service and reusable application provisioning.",
+      "sha256": "32ba80a5ac474801f339b85f5cfbdbbcfd19bd2081618377db521e03708677d8"
+    },
+    "plugin-src/host/harness-peer.mjs": {
+      "reason": "Share the upstream Host peer while retaining older Host connection.operator and context service lookup compatibility.",
+      "sha256": "a2e8643e0e7477384ae314a5f9249a75548e03c8fdeacb55994918e6cf412d23"
     },
     "plugin-src/host/index.mjs": {
       "reason": "Fork host composes upstream activation with the shared application service and personal connectors.",
       "sha256": "4fd4db25bc2c09d42e96e8f8b73f7814c95f2b7d0b30183f18ec09233d51c125"
     },
-    "plugin-src/host/upstream-im.mjs": {
-      "reason": "One additionalChannels extension point; upstream activation otherwise unchanged.",
-      "sha256": "eb2f111dd6764c07820c84f04ca2e5de1ed9e64c0b2c7618fb0f5d958956c8c7"
+    "plugin-src/host/modern-harness-api.mjs": {
+      "reason": "Preserve fork Host bus contract declarations, packed-history compatibility and revision-aware live assistant streaming; reuse the upstream shared caller peer.",
+      "sha256": "1c78eeae189c4ec3e6c8f9de09083e64c14ca76301a7032857744804c7df3a94"
     },
     "plugin-src/host/update-runtime.mjs": {
       "reason": "Query private release metadata through the existing authenticated host package-manager executor; retain bounded cancellation, profile and registry checks.",
       "sha256": "57d09876afa71fafc57cbd63cf015c410b3d593554ca8c8e90e70dd7b7a1bafc"
     },
+    "plugin-src/host/update-service.mjs": {
+      "reason": "Validate private release metadata both at check and install revalidation; preserve fork recovery journal and use bounded Windows sharing-error retries for atomic state reads/writes.",
+      "sha256": "8f58e67e7e5a662bd9567526f790dca23dda2b7b4022288e5582323e31fdbcf2"
+    },
+    "plugin-src/host/upstream-im.mjs": {
+      "reason": "One additionalChannels extension point; upstream activation otherwise unchanged.",
+      "sha256": "26941099322d577ad02471a2e7ff3ca188415c8684b13fec3ad301b09d933123"
+    },
+    "src/channels/feishu/multi-bot-controller.mjs": {
+      "reason": "Shared Feishu application service and reusable application provisioning.",
+      "sha256": "0020b28dda14086b574bfdbd00cf9c3f267cb188ffe4560b6fc8129361871de8"
+    },
+    "src/channels/qq/qr-auth.mjs": {
+      "reason": "Retain manual QQ credentials; the QR SDK is UNLICENSED and remains excluded.",
+      "sha256": "c4460f9d3fd1de7a8987fb8c898897dcf228e4eaecd305481d5ce52b685247ae"
+    },
+    "src/channels/shared/deferred-delivery.mjs": {
+      "reason": "Recognize both legacy and current live assistant chunk event names consistently with the fork Harness client.",
+      "sha256": "3080d665ca5ce4df1032a82ef58842262f5336571373b10c51629a2adffe4746"
+    },
+    "src/channels/shared/harness-approval.mjs": {
+      "reason": "Preserve Telegram multi-select and approval buttons alongside upstream single-choice cards.",
+      "sha256": "a39e22f7352beac1346afb63c1744226c9e7a37f1103b2b61ffbaf5f49ca81ba"
+    },
+    "src/channels/shared/harness-client.mjs": {
+      "reason": "Recognize legacy and current tool sub-dispatch and assistant live event names, including final-answer accumulation, for supported Host versions.",
+      "sha256": "5cb52cd30c960252ce39847c504ba6969bc8a78612316d9e2da8dfee7231e900"
+    },
+    "src/channels/shared/text-harness-bridge.mjs": {
+      "reason": "Preserve Telegram multi-select and approval buttons alongside upstream single-choice cards.",
+      "sha256": "f7631d834bbabe8bb906069eeb3f2e587da93e6d13f02c9a5f34e8d5bb0b4b0d"
+    },
+    "src/channels/shared/token-bot-controller.mjs": {
+      "reason": "Reuse the Telegram runtime for network recovery through its reconnect hook, preserving in-flight Harness and artifact consumers; credential/config changes still replace the runtime.",
+      "sha256": "25bc259914f6fb6af0e193dd53f8a52c4d32e8b9198e50b78b75062bbcdc89f5"
+    },
+    "src/channels/telegram/telegram-runtime.mjs": {
+      "reason": "Preserve PitWall reconnect ownership and require explicit thinking-trace opt-in when constructing the bridge.",
+      "sha256": "be5b1052f12a161fd324e90f81ebb3c933f967c48547b2845a108aaa326a166e"
+    },
+    "test/browser/session-channel-logos.fixture.js": {
+      "reason": "Exercise inherited title shadows, live updates and complete typography restoration for the fork logo fix.",
+      "sha256": "f6b57d261fd00db588ca3a1715a2285ef42b694fae076fe2ad252e54a3dd7b3f"
+    },
+    "test/channels/dingtalk/harness-client.test.mjs": {
+      "reason": "Recognize the renamed run_code sub-dispatch event alongside the pre-rename name, so approvals raised inside run_code keep their tool context on dsh 0.1.5 and later.",
+      "sha256": "ab74faafec9e7235a932b713643ecb85b19808c24e6e63f9a6996a62f0d3bb55"
+    },
+    "test/channels/qq/client-ui.test.mjs": {
+      "reason": "Retain manual QQ credentials; the QR SDK is UNLICENSED and remains excluded.",
+      "sha256": "5c1fcff4a0e333fca3d609afefdf06b139b5001a018dc86cf4e1474b33270bc8"
+    },
+    "test/channels/shared/i18n.test.mjs": {
+      "reason": "Normalize CRLF before comparing source template literals with runtime dictionary keys.",
+      "sha256": "a942a8e1570be09e8ab6bc484a90650027d5b50d24e5fc9ee04d6564a2d00e5b"
+    },
+    "test/channels/shared/startup.test.mjs": {
+      "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests.",
+      "sha256": "31d90f8a2d6f5ec73959a9ecaeba99028d46365cf8657114a5c01deff67e4488"
+    },
+    "test/channels/telegram/command-menu-sync.test.mjs": {
+      "reason": "Verify reconnection refreshes changed and empty command menus while retaining a single runtime, as required by PitWall report recovery.",
+      "sha256": "9283538f2677b2bf024e4878c8630632ca356c31c026275a55e09c3372b0f3fd"
+    },
+    "test/client-delivery-settings.test.mjs": {
+      "reason": "Test embedded upstream settings separately; retain Feishu shared-app and manual QQ UI expectations.",
+      "sha256": "b5d941b0b8d9da45335be53fb2cad65ba6f8700e090b6c401fcf2392786505ae"
+    },
+    "test/client-i18n-bundle.test.mjs": {
+      "reason": "Verify the fork package identity and connection-center labels in the built client across supported locales.",
+      "sha256": "ac5a8acfc63aa8f3042a37cfa9c4d864368b88c797c9a1fcf858ec0d3f809460"
+    },
+    "test/client-i18n-ru.test.mjs": {
+      "reason": "Verify upstream Russian translations and the documented English fallback allowlist for fork-only UI keys.",
+      "sha256": "2de461f1527416e36c19982b4a98d4af7e785fa6b58c949add60e3f9bd232b58"
+    },
+    "test/client-service.test.mjs": {
+      "reason": "Exercise the embedded upstream client service independently; fork wrapper behavior has separate tests.",
+      "sha256": "b5d73ec68b209e7b58aa626352bad8e9d60df89da0f688bdfa3fc3cfa41a6b96"
+    },
+    "test/client-ui.test.mjs": {
+      "reason": "Test embedded upstream settings separately; retain Feishu shared-app and manual QQ UI expectations.",
+      "sha256": "d4e73b53b01786dddbc08ae8b8af6dd7e60f1d0afb03a80c536f91b8093d6614"
+    },
+    "test/host-harness-connection.test.mjs": {
+      "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests.",
+      "sha256": "856a29f2f02f22ff4193935049b0d28bfb3021da585f92cbb0dc1553673ffbb6"
+    },
+    "test/host-language-bundle.test.mjs": {
+      "reason": "Exercise the built fork Host with test-only Host peer stubs and disabled personal connectors, without installing duplicate runtime peer packages.",
+      "sha256": "506afca4214e80e7d583cc3f8a4ad1c48cf843efd35cd1e0655fdca8b1465b10"
+    },
+    "test/host-modern-harness-api.test.mjs": {
+      "reason": "Retain the regression for revision-aware streaming when a replacement agent reuses an attempt id and a prior lifecycle delivers late frames.",
+      "sha256": "eb716351dc366837d57db4820360a64a283dcf1fcdbd94c9355155806e41a863"
+    },
+    "test/host.test.mjs": {
+      "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests.",
+      "sha256": "c9fc7ce4306d9f1516162368c1bf97290a7288767496711d06d29d8176f6f0fa"
+    },
+    "test/update-rpc.test.mjs": {
+      "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests.",
+      "sha256": "b82b9fa8164b5d851d4dcc594f539ea9d3f5699886368eb0c2a3cc325176588a"
+    },
     "test/update-runtime.test.mjs": {
       "reason": "Exercise private authenticated metadata lookup through desktop/CLI executors, malformed responses and conflicting scope registries.",
       "sha256": "afa06d2aa7364d2ae4c950773bbf997c42008c75e1c94d1c9f49f449fe850e02"
     },
-    "plugin-src/host/update-service.mjs": {
-      "reason": "Validate private release metadata both at check and install revalidation; preserve fork recovery journal and use bounded Windows sharing-error retries for atomic state reads/writes.",
-      "sha256": "d4e62f91e96bbf5b331008862608219a92c73cac6eb950b6d7997609798d990f"
-    },
     "test/update-service.test.mjs": {
       "reason": "Exercise authenticated private metadata at check and install revalidation, reject changed releases/public origins, and retain lock/recovery coverage.",
-      "sha256": "9a47a0561f22abef7ca017dc845a3168929b457a7c544313cefae8554f185804"
-    },
-    "src/channels/shared/harness-approval.mjs": {
-      "reason": "Preserve Telegram multi-select and approval buttons alongside upstream single-choice cards.",
-      "sha256": "e4cd664b5bd62aef927e158b48cc2b8a07112d723f0e08954e34aaa2ed679340"
-    },
-    "src/channels/shared/text-harness-bridge.mjs": {
-      "reason": "Preserve Telegram multi-select and approval buttons alongside upstream single-choice cards.",
-      "sha256": "2a5741301e2a020cceab953409940f94d112233eabbb3ae468b12acf675f7cce"
-    },
-    "src/channels/telegram/telegram-runtime.mjs": {
-      "reason": "Preserve Telegram multi-select and approval buttons alongside upstream single-choice cards.",
-      "sha256": "44c4b3c60aaf522ca3421594eda1f524e1e80a005df7014c2d791d09ff21c32e"
-    },
-    "test/channels/shared/i18n.test.mjs": {
-      "reason": "Normalize CRLF before comparing source template literals with runtime dictionary keys.",
-      "sha256": "4721e66cffb3e372280847892062a9abb1f6ab40f4ef55eb014acd222bcc3afc"
-    },
-    "test/channels/shared/startup.test.mjs": {
-      "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests.",
-      "sha256": "20b7970fef31888fe7c5fe3aaa25cf0b383a361df74e6b4b62acd966670d4b86"
-    },
-    "test/host-harness-connection.test.mjs": {
-      "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests.",
-      "sha256": "8ac4e139f323cbd48969b1c5dfc62f9404b08974f8147262f4913b341bd79db9"
-    },
-    "test/host.test.mjs": {
-      "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests.",
-      "sha256": "4a91e247e809c7b2b6c245c53a3af9f255d54a09e5833d8a008498226da6466d"
-    },
-    "test/update-rpc.test.mjs": {
-      "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests.",
-      "sha256": "04da23f46fb93d2ce38d70963261f9c66205a534090676e62e7130fbe7e3eec5"
-    },
-    "test/client-delivery-settings.test.mjs": {
-      "reason": "Test embedded upstream settings separately; retain Feishu shared-app and manual QQ UI expectations.",
-      "sha256": "3f003ff577e4cef88f02b94b0c4704e77ce1de73a8dd87b0e818c2295954afd8"
-    },
-    "test/client-ui.test.mjs": {
-      "reason": "Test embedded upstream settings separately; retain Feishu shared-app and manual QQ UI expectations.",
-      "sha256": "dbef103fd860ea1abac61c6993b07ebb9bf69c34a3a001db9f71fa345ed71335"
-    },
-    "plugin-src/client/session-channel-logos.js": {
-      "reason": "Preserve upstream logos and lifecycle; suppress inherited text shadows only on visually replaced channel titles.",
-      "sha256": "8f5be641fdc48e66c86003c17f00c83383bd7ade345527b5dfad8c6cae8e1aa6"
-    },
-    "plugin-src/client/update-panel.js": {
-      "reason": "Manual updates target @tokensapi/dsh-connect on the private registry; retain profile/version safety and latest fallback notice.",
-      "sha256": "2fc641d0f9635bb09caf1a6874858dc50202644ea9efaa779414c4c129815daa"
-    },
-    "test/browser/session-channel-logos.fixture.js": {
-      "reason": "Exercise inherited title shadows, live updates and complete typography restoration for the fork logo fix.",
-      "sha256": "5b4fe34451eec5ff979184df06118f2628b6d3970f3561967d63a9f25936094a"
+      "sha256": "c6018368620e26de0bfce56f467cfdb1c8ef278dbdaebc3c4695f2f837821afc"
     },
     "test/update-ui.test.mjs": {
       "reason": "Assert fork package/private registry manual commands, safe profiles and version selection, plus the latest fallback notice.",
-      "sha256": "45c72fde1e27df48a5a612929bb5b49fdf05cae0751003c96ce91fefb706c76b"
+      "sha256": "89859bd996eba6dc4b2d9938a678135cfbb35f43de94ced4616026a56690d3cb"
     },
-    "src/channels/shared/harness-client.mjs": {
-      "reason": "Recognize the renamed run_code sub-dispatch event alongside the pre-rename name, so approvals raised inside run_code keep their tool context on dsh 0.1.5 and later.",
-      "sha256": "61d6c9d3478741c171c0822efa7f80cf39f839d19b339bb66f2fe899ed69ec71"
+    "src/channels/telegram/telegram-controller.mjs": {
+      "reason": "Preserve fork Telegram controller behavior and require explicit opt-in for thinking-trace status; missing legacy settings remain off.",
+      "sha256": "de9d0bfb3610d0229673e74ff5e60e547839804e15aefc4722560b9df2b36ff4"
     },
-    "test/channels/dingtalk/harness-client.test.mjs": {
-      "reason": "Recognize the renamed run_code sub-dispatch event alongside the pre-rename name, so approvals raised inside run_code keep their tool context on dsh 0.1.5 and later.",
-      "sha256": "cb2cef4ebc531b67add01e62a0a855e98ac955a193cc0901ef16fb2579fd9083"
+    "plugin-src/client/channels/telegram/thinking-traces.js": {
+      "reason": "Default the Telegram thinking-trace settings switch to off unless the saved value is explicitly true.",
+      "sha256": "3e5b65367ec835dab0d86e970c94a4f8c5cc9cf78dd919dd75566ffdf7ed5cf0"
+    },
+    "plugin-src/client/channels/shared/token-api.js": {
+      "reason": "Normalize thinking traces as an explicit opt-in, including older Telegram status responses without the field.",
+      "sha256": "e5805a32b9ddf1e5119a33aed7822f3652b3cb54c387c716094fa1c55e4dceeb"
+    },
+    "test/channels/telegram/thinking-traces.test.mjs": {
+      "reason": "New Telegram bots default to off; explicit toggle choices continue to round-trip through configuration and status.",
+      "sha256": "5b5599500baf60cdda4e740fcc3aa6228a7f8f48542d0864d2473233cbcf9b8a"
+    },
+    "test/delivery-service.test.mjs": {
+      "reason": "Keep the rolled-over DS Bot delivery regression at top level so Node 22 does not cancel it when an unrelated parent test finishes. Assertions and runtime behavior remain unchanged.",
+      "sha256": "6e80262415e60ad3f438d565132bde4f2be4e28a572d4f3e54b31b196cfccf93"
     }
   }
 }

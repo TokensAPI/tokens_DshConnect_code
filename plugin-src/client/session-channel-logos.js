@@ -2,7 +2,7 @@ import { parseSessionChannelTitle } from '../../src/channels/shared/session-chan
 import {
   WeixinLogoGlyph, FeishuLogoGlyph, DingtalkLogoGlyph, WecomLogoGlyph, QqLogoGlyph,
   SlackLogoGlyph, TelegramLogoGlyph, DiscordLogoGlyph, WhatsappLogoGlyph, OfficeLogoGlyph,
-  IMessageLogoGlyph,
+  IMessageLogoGlyph, MatrixLogoGlyph,
 } from './channel-logos.js';
 
 const GLYPHS = Object.freeze({
@@ -16,6 +16,7 @@ const GLYPHS = Object.freeze({
   discord: [DiscordLogoGlyph, '#5865f2'],
   whatsapp: [WhatsappLogoGlyph, '#25d366'],
   imessage: [IMessageLogoGlyph, '#3478f6'],
+  matrix: [MatrixLogoGlyph, '#1a8f6f'],
   office: [OfficeLogoGlyph, '#f97316'],
 });
 const CHANNEL_ATTR = 'data-dsh-im-session-channel';
@@ -109,6 +110,14 @@ ${MARKED}[${TITLE_ATTR}]::after {
   white-space: nowrap;
   text-overflow: ellipsis;
   pointer-events: none;
+}
+/* The Host scrolls the original span and publishes these marquee fade hooks.
+   Let the replacement travel as complete text, not a pre-clipped viewport. */
+${MARKED}[${TITLE_ATTR}]:is([data-scrolled], [data-clipped])::after {
+  inset-inline-end: auto;
+  width: max-content;
+  overflow: visible;
+  text-overflow: clip;
 }
 ${Object.entries(uris).map(([channel, uri]) => `[${CHANNEL_ATTR}="${channel}"] { --dsh-im-session-logo: url("${uri}"); }`).join('\n')}
 `;

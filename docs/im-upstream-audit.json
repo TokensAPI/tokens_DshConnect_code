@@ -1,11 +1,11 @@
 {
-  "upstream": "34a370bfef1fcf577327b822d2091d2157ded0f8",
-  "local": "786c3f56a15ce549ead12d64ec8817037ddb55e8",
+  "upstream": "c826bfa415d79669d8ebba206cf4a1eac554d8e2",
+  "local": "3e54203541d481db254acad94767ee278bcccff4",
   "complete": true,
   "counts": {
-    "equal": 483,
-    "reviewed-fork-difference": 36,
-    "fork-only": 64
+    "equal": 735,
+    "reviewed-fork-difference": 52,
+    "fork-only": 78
   },
   "files": [
     {
@@ -18,6 +18,14 @@
     },
     {
       "path": "plugin-src/client/bot-alias.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/bot-general-settings.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/bot-settings-tabs.js",
       "status": "equal"
     },
     {
@@ -58,9 +66,25 @@
       "status": "equal"
     },
     {
+      "path": "plugin-src/client/channels/email/api.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/channels/email/index.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/channels/email/styles.js",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/client/channels/feishu/api.js",
       "status": "reviewed-fork-difference",
       "reason": "Shared Feishu application service and reusable application provisioning."
+    },
+    {
+      "path": "plugin-src/client/channels/feishu/conversation-directory-settings.js",
+      "status": "equal"
     },
     {
       "path": "plugin-src/client/channels/feishu/group-settings.js",
@@ -72,7 +96,19 @@
       "reason": "Shared Feishu application service and reusable application provisioning."
     },
     {
+      "path": "plugin-src/client/channels/feishu/slash-panel-settings.js",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/client/channels/feishu/styles.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/channels/feishu/voice-editor.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/channels/feishu/voice-settings.js",
       "status": "equal"
     },
     {
@@ -85,6 +121,18 @@
     },
     {
       "path": "plugin-src/client/channels/imessage/styles.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/channels/matrix/api.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/channels/matrix/index.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/channels/matrix/styles.js",
       "status": "equal"
     },
     {
@@ -118,7 +166,8 @@
     },
     {
       "path": "plugin-src/client/channels/shared/token-api.js",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "Normalize thinking traces as an explicit opt-in, including older Telegram status responses without the field."
     },
     {
       "path": "plugin-src/client/channels/shared/token-channel.js",
@@ -141,12 +190,21 @@
       "status": "equal"
     },
     {
+      "path": "plugin-src/client/channels/telegram/group-triggers-settings.js",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/client/channels/telegram/index.js",
       "status": "equal"
     },
     {
       "path": "plugin-src/client/channels/telegram/styles.js",
       "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/channels/telegram/thinking-traces.js",
+      "status": "reviewed-fork-difference",
+      "reason": "Default the Telegram thinking-trace settings switch to off unless the saved value is explicitly true."
     },
     {
       "path": "plugin-src/client/channels/wecom-app/api.js",
@@ -205,6 +263,10 @@
       "status": "fork-only"
     },
     {
+      "path": "plugin-src/client/connection-error.js",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/client/connectors/dingtalk-personal/api.js",
       "status": "fork-only"
     },
@@ -249,13 +311,46 @@
       "status": "equal"
     },
     {
+      "path": "plugin-src/client/delivery-sync-settings.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/ds-bot-avatar-data.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/ds-bot-avatar.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/ds-bot-session-avatars.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/ds-bot-settings.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/fork-locale-fallbacks.json",
+      "status": "fork-only"
+    },
+    {
       "path": "plugin-src/client/global-settings.js",
       "status": "equal"
     },
     {
+      "path": "plugin-src/client/group-history-settings.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/i18n-ru.js",
+      "status": "reviewed-fork-difference",
+      "reason": "Preserve Russian translation for the dynamic unauthorized reason when the fork merges English fallbacks."
+    },
+    {
       "path": "plugin-src/client/i18n.js",
       "status": "reviewed-fork-difference",
-      "reason": "Connection center, personal authorization translations and existing visual treatment."
+      "reason": "Preserve connection-center and personal-authorization translations, dynamic template localization, and explicit English fallbacks for fork-only Russian keys."
     },
     {
       "path": "plugin-src/client/index.js",
@@ -283,6 +378,14 @@
       "status": "equal"
     },
     {
+      "path": "plugin-src/client/panel-error-boundary.js",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/client/plugin-page.js",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/client/session-channel-logos.js",
       "status": "reviewed-fork-difference",
       "reason": "Preserve upstream logos and lifecycle; suppress inherited text shadows only on visually replaced channel titles."
@@ -290,6 +393,10 @@
     {
       "path": "plugin-src/client/settings-nav-icon.js",
       "status": "fork-only"
+    },
+    {
+      "path": "plugin-src/client/sidebar-settings.js",
+      "status": "equal"
     },
     {
       "path": "plugin-src/client/styles.js",
@@ -304,7 +411,7 @@
     {
       "path": "plugin-src/client/upstream-im.js",
       "status": "reviewed-fork-difference",
-      "reason": "Upstream settings embedded under connection center with a settings registration hook."
+      "reason": "Embed upstream settings and panel service inside the connection-center wrapper through explicit Panel, dependency and registration hooks while retaining locale lifecycle."
     },
     {
       "path": "plugin-src/client/workspace-directory-picker.js",
@@ -352,6 +459,22 @@
       "status": "equal"
     },
     {
+      "path": "plugin-src/host/channels/email/availability.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/channels/email/index.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/channels/email/production.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/channels/email/rpc.mjs",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/host/channels/feishu/connection-supervisor.mjs",
       "status": "equal"
     },
@@ -387,6 +510,18 @@
     },
     {
       "path": "plugin-src/host/channels/imessage/rpc.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/channels/matrix/index.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/channels/matrix/production.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/channels/matrix/rpc.mjs",
       "status": "equal"
     },
     {
@@ -430,6 +565,10 @@
       "status": "equal"
     },
     {
+      "path": "plugin-src/host/channels/shared/binding-events.mjs",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/host/channels/shared/bot-alias-rpc.mjs",
       "status": "equal"
     },
@@ -439,6 +578,10 @@
     },
     {
       "path": "plugin-src/host/channels/shared/context-enhancement-rpc.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/channels/shared/group-triggers-rpc.mjs",
       "status": "equal"
     },
     {
@@ -454,11 +597,23 @@
       "status": "equal"
     },
     {
+      "path": "plugin-src/host/channels/shared/send-limit-rpc.mjs",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/host/channels/shared/startup-error.mjs",
       "status": "equal"
     },
     {
       "path": "plugin-src/host/channels/shared/startup.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/channels/shared/thinking-cadence-rpc.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/channels/shared/thinking-traces-rpc.mjs",
       "status": "equal"
     },
     {
@@ -670,8 +825,28 @@
       "status": "equal"
     },
     {
+      "path": "plugin-src/host/delivery-sync-rpc.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/ds-bot-client.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/ds-bot-question-sync.mjs",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/host/feishu-application-service.mjs",
       "status": "fork-only"
+    },
+    {
+      "path": "plugin-src/host/group-history-rpc.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/group-history-runtime.mjs",
+      "status": "equal"
     },
     {
       "path": "plugin-src/host/harness-command-executor.mjs",
@@ -680,6 +855,11 @@
     {
       "path": "plugin-src/host/harness-connection.mjs",
       "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/harness-peer.mjs",
+      "status": "reviewed-fork-difference",
+      "reason": "Share the upstream Host peer while retaining older Host connection.operator and context service lookup compatibility."
     },
     {
       "path": "plugin-src/host/harness-session-coordinator.mjs",
@@ -691,6 +871,10 @@
     },
     {
       "path": "plugin-src/host/host-language.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/image-input-rpc.mjs",
       "status": "equal"
     },
     {
@@ -720,7 +904,8 @@
     },
     {
       "path": "plugin-src/host/modern-harness-api.mjs",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "Preserve fork Host bus contract declarations, packed-history compatibility and revision-aware live assistant streaming; reuse the upstream shared caller peer."
     },
     {
       "path": "plugin-src/host/rpc-authority.mjs",
@@ -731,7 +916,15 @@
       "status": "equal"
     },
     {
+      "path": "plugin-src/host/session-sync-targets.mjs",
+      "status": "equal"
+    },
+    {
       "path": "plugin-src/host/session-title-prefix.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "plugin-src/host/sidebar-settings.mjs",
       "status": "equal"
     },
     {
@@ -834,6 +1027,54 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/email/config-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/email-api.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/email-bridge.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/email-controller.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/email-runtime.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/harness-client.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/mail-format.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/state-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/transport.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/transports/agent-mail.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/transports/agently-cli.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/email/transports/imap-smtp.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/feishu/application-registry.mjs",
       "status": "fork-only"
     },
@@ -843,6 +1084,10 @@
     },
     {
       "path": "src/channels/feishu/config.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/feishu/external-consumer.mjs",
       "status": "equal"
     },
     {
@@ -874,6 +1119,14 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/feishu/history-reader.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/feishu/live-cot.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/feishu/message-utils.mjs",
       "status": "equal"
     },
@@ -881,6 +1134,10 @@
       "path": "src/channels/feishu/multi-bot-controller.mjs",
       "status": "reviewed-fork-difference",
       "reason": "Shared Feishu application service and reusable application provisioning."
+    },
+    {
+      "path": "src/channels/feishu/nearby-history.mjs",
+      "status": "equal"
     },
     {
       "path": "src/channels/feishu/plugin-config-store.mjs",
@@ -899,6 +1156,14 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/feishu/resource-download.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/feishu/slash-command-panel.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/feishu/slash-command-registry.mjs",
       "status": "equal"
     },
@@ -908,6 +1173,14 @@
     },
     {
       "path": "src/channels/feishu/step-push-mode.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/feishu/voice-config.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/feishu/voice.mjs",
       "status": "equal"
     },
     {
@@ -936,6 +1209,50 @@
     },
     {
       "path": "src/channels/imessage/state-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-api.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-bridge.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-config-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-controller.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-crypto-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-crypto.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-harness-client.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-normalize.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-rich-text.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-room-history.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/matrix/matrix-runtime.mjs",
       "status": "equal"
     },
     {
@@ -983,6 +1300,10 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/qq/qq-mention.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/qq/qq-menu.mjs",
       "status": "equal"
     },
@@ -1004,7 +1325,15 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/AGENTS.md",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/access-policy.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/action-card.mjs",
       "status": "equal"
     },
     {
@@ -1024,7 +1353,19 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/busy-message-dispatcher.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/clear-command.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/command-catalog.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/command-list-snapshots.mjs",
       "status": "equal"
     },
     {
@@ -1040,6 +1381,10 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/connection-error.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/connection-test.mjs",
       "status": "equal"
     },
@@ -1052,7 +1397,55 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/conversation-directory-ensure.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation-directory.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation-queue.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/conversation-state-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation/ambient-provider.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation/context-builder.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation/describe.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation/reply-context.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation/root-context.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation/route.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation/semantic-message.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/conversation/trigger-policy.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/default-workspace.mjs",
       "status": "equal"
     },
     {
@@ -1061,10 +1454,27 @@
     },
     {
       "path": "src/channels/shared/deferred-delivery.mjs",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "Recognize both legacy and current live assistant chunk event names consistently with the fork Harness client."
     },
     {
       "path": "src/channels/shared/deferred-state.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/delivery-failure-log.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/delivery-sync-settings-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/delivery-sync-settings.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/diagnostic-details.mjs",
       "status": "equal"
     },
     {
@@ -1076,6 +1486,18 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/group-history-access.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/group-history-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/group-history.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/harness-approval.mjs",
       "status": "reviewed-fork-difference",
       "reason": "Preserve Telegram multi-select and approval buttons alongside upstream single-choice cards."
@@ -1083,7 +1505,7 @@
     {
       "path": "src/channels/shared/harness-client.mjs",
       "status": "reviewed-fork-difference",
-      "reason": "Recognize the renamed run_code sub-dispatch event alongside the pre-rename name, so approvals raised inside run_code keep their tool context on dsh 0.1.5 and later."
+      "reason": "Recognize legacy and current tool sub-dispatch and assistant live event names, including final-answer accumulation, for supported Host versions."
     },
     {
       "path": "src/channels/shared/harness-mux.mjs",
@@ -1106,6 +1528,10 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/i18n-en/diagnostics.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/i18n-en/dingtalk.mjs",
       "status": "equal"
     },
@@ -1114,11 +1540,27 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/i18n-en/email.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/i18n-en/feishu.mjs",
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/i18n-en/image-input.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-en/matrix.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/i18n-en/office.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-en/permission.mjs",
       "status": "equal"
     },
     {
@@ -1162,11 +1604,103 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/i18n-ru.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/diagnostics.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/dingtalk.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/discord.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/email.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/feishu.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/image-input.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/matrix.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/office.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/permission.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/qq.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/shared-a.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/shared-b.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/shared-c.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/slack.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/telegram.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/wecom-app.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/wecom.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/weixin.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/i18n-ru/whatsapp.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/i18n.mjs",
       "status": "equal"
     },
     {
       "path": "src/channels/shared/im-source-guidance.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/image-input-policy.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/image-input-settings-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/image-input.mjs",
       "status": "equal"
     },
     {
@@ -1202,7 +1736,15 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/markdown-chunks.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/message-failure.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/message-mode.mjs",
       "status": "equal"
     },
     {
@@ -1214,7 +1756,27 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/new-command.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/permission-command.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/preset-command.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/preset-workspaces.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/prompt-failure-tracker.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/qr-encoding-error.mjs",
       "status": "equal"
     },
     {
@@ -1234,11 +1796,19 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/send-limit.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/session-binding-lock.mjs",
       "status": "equal"
     },
     {
       "path": "src/channels/shared/session-channel-labels.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/session-error.mjs",
       "status": "equal"
     },
     {
@@ -1254,6 +1824,14 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/shared/speaker-label.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/status-command.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/shared/status-reaction.mjs",
       "status": "equal"
     },
@@ -1263,8 +1841,13 @@
       "reason": "Preserve Telegram multi-select and approval buttons alongside upstream single-choice cards."
     },
     {
-      "path": "src/channels/shared/token-bot-controller.mjs",
+      "path": "src/channels/shared/thinking-cadence.mjs",
       "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/token-bot-controller.mjs",
+      "status": "reviewed-fork-difference",
+      "reason": "Reuse the Telegram runtime for network recovery through its reconnect hook, preserving in-flight Harness and artifact consumers; credential/config changes still replace the runtime."
     },
     {
       "path": "src/channels/shared/token-config-store.mjs",
@@ -1272,6 +1855,10 @@
     },
     {
       "path": "src/channels/shared/workspace-command.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/shared/workspace-labels.mjs",
       "status": "equal"
     },
     {
@@ -1311,12 +1898,24 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/telegram/approval-card.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/telegram/config-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/telegram/group-triggers.mjs",
       "status": "equal"
     },
     {
       "path": "src/channels/telegram/harness-client.mjs",
       "status": "equal"
+    },
+    {
+      "path": "src/channels/telegram/reconnect-delivery-gate.mjs",
+      "status": "fork-only"
     },
     {
       "path": "src/channels/telegram/state-store.mjs",
@@ -1336,7 +1935,8 @@
     },
     {
       "path": "src/channels/telegram/telegram-controller.mjs",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "Preserve fork Telegram controller behavior and require explicit opt-in for thinking-trace status; missing legacy settings remain off."
     },
     {
       "path": "src/channels/telegram/telegram-http.mjs",
@@ -1349,7 +1949,11 @@
     {
       "path": "src/channels/telegram/telegram-runtime.mjs",
       "status": "reviewed-fork-difference",
-      "reason": "Preserve Telegram multi-select and approval buttons alongside upstream single-choice cards."
+      "reason": "Preserve PitWall reconnect ownership and require explicit thinking-trace opt-in when constructing the bridge."
+    },
+    {
+      "path": "src/channels/telegram/voice.mjs",
+      "status": "equal"
     },
     {
       "path": "src/channels/wecom-app/callback-server.mjs",
@@ -1401,6 +2005,10 @@
     },
     {
       "path": "src/channels/wecom/state-store.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "src/channels/wecom/stream-supervisor.mjs",
       "status": "equal"
     },
     {
@@ -1480,6 +2088,10 @@
       "status": "equal"
     },
     {
+      "path": "src/channels/whatsapp/whatsapp-markdown.mjs",
+      "status": "equal"
+    },
+    {
       "path": "src/channels/whatsapp/whatsapp-runtime.mjs",
       "status": "equal"
     },
@@ -1516,6 +2128,14 @@
       "status": "equal"
     },
     {
+      "path": "test/bot-general-settings.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/browser/bot-settings-tabs.fixture.js",
+      "status": "equal"
+    },
+    {
       "path": "test/browser/model-setting.fixture.js",
       "status": "equal"
     },
@@ -1526,6 +2146,10 @@
     },
     {
       "path": "test/browser/weixin-diagnostics.fixture.js",
+      "status": "equal"
+    },
+    {
+      "path": "test/busy-message-dispatcher.test.mjs",
       "status": "equal"
     },
     {
@@ -1598,6 +2222,10 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/dingtalk/proactive-markdown.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/dingtalk/production.test.mjs",
       "status": "equal"
     },
@@ -1618,7 +2246,23 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/discord/owner-access.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/discord/production.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/email/email.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/email/imap-smtp.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/feishu/access-policy.test.mjs",
       "status": "equal"
     },
     {
@@ -1646,6 +2290,10 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/feishu/external-consumer.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/feishu/feishu-app.test.mjs",
       "status": "equal"
     },
@@ -1658,6 +2306,10 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/feishu/feishu-operation.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/feishu/feishu-proxy.test.mjs",
       "status": "equal"
     },
@@ -1666,7 +2318,15 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/feishu/fixtures/ffmpeg-stub.sh",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/feishu/fixtures/lark-sdk-close-during-handshake.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/feishu/goal-round.test.mjs",
       "status": "equal"
     },
     {
@@ -1679,6 +2339,10 @@
     },
     {
       "path": "test/channels/feishu/lark-sdk-handshake-patch.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/feishu/live-cot.test.mjs",
       "status": "equal"
     },
     {
@@ -1702,6 +2366,10 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/feishu/proactive-markdown.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/feishu/registration-manager.test.mjs",
       "status": "equal"
     },
@@ -1710,7 +2378,19 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/feishu/resource-download-sdk.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/feishu/resource-download.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/feishu/session-sync.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/feishu/slash-command-panel.test.mjs",
       "status": "equal"
     },
     {
@@ -1719,6 +2399,14 @@
     },
     {
       "path": "test/channels/feishu/state-store.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/feishu/voice-bridge.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/feishu/voice.test.mjs",
       "status": "equal"
     },
     {
@@ -1732,6 +2420,42 @@
     {
       "path": "test/channels/imessage/runtime.test.mjs",
       "status": "fork-only"
+    },
+    {
+      "path": "test/channels/matrix/matrix-api.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/matrix/matrix-config-store.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/matrix/matrix-context-engine.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/matrix/matrix-crypto.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/matrix/matrix-delivery.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/matrix/matrix-normalize.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/matrix/matrix-rich-text.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/matrix/matrix-room-history.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/matrix/matrix-runtime.test.mjs",
+      "status": "equal"
     },
     {
       "path": "test/channels/office/office.test.mjs",
@@ -1763,6 +2487,10 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/qq/mention.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/qq/menu.test.mjs",
       "status": "equal"
     },
@@ -1783,6 +2511,18 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/shared/action-card.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/binding-events.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/busy-message-bridges.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/shared/command-help.test.mjs",
       "status": "equal"
     },
@@ -1791,11 +2531,23 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/shared/connection-diagnostics.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/shared/context-enhancement-bridges.test.mjs",
       "status": "equal"
     },
     {
       "path": "test/channels/shared/context-enhancement-production.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/conversation-context.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/default-workspace-production.test.mjs",
       "status": "equal"
     },
     {
@@ -1819,7 +2571,23 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/shared/harness-message-diagnostics.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/shared/harness-mux.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/harness-rpc-diagnostics.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/i18n-coverage.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/i18n-source-literal.mjs",
       "status": "equal"
     },
     {
@@ -1828,13 +2596,33 @@
       "reason": "Normalize CRLF before comparing source template literals with runtime dictionary keys."
     },
     {
+      "path": "test/channels/shared/new-bot-access-policy.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/shared/production.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/qr-encoding.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/session-sync-markdown.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/shared/speaker-label.test.mjs",
       "status": "equal"
     },
     {
       "path": "test/channels/shared/startup.test.mjs",
       "status": "reviewed-fork-difference",
       "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests."
+    },
+    {
+      "path": "test/channels/shared/status-command.test.mjs",
+      "status": "equal"
     },
     {
       "path": "test/channels/shared/status-reaction.test.mjs",
@@ -1857,6 +2645,10 @@
       "status": "equal"
     },
     {
+      "path": "test/channels/telegram/approval-card.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/telegram/buttons.test.mjs",
       "status": "fork-only"
     },
@@ -1865,11 +2657,20 @@
       "status": "equal"
     },
     {
-      "path": "test/channels/telegram/command-menu-sync.test.mjs",
+      "path": "test/channels/telegram/command-menu-scopes.test.mjs",
       "status": "equal"
     },
     {
+      "path": "test/channels/telegram/command-menu-sync.test.mjs",
+      "status": "reviewed-fork-difference",
+      "reason": "Verify reconnection refreshes changed and empty command menus while retaining a single runtime, as required by PitWall report recovery."
+    },
+    {
       "path": "test/channels/telegram/command-menu.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/delivery-failure-log.test.mjs",
       "status": "equal"
     },
     {
@@ -1877,11 +2678,35 @@
       "status": "fork-only"
     },
     {
+      "path": "test/channels/telegram/group-triggers-controller.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/group-triggers-rpc.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/group-triggers-ui.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/group-triggers.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/telegram/interaction-card.test.mjs",
       "status": "equal"
     },
     {
+      "path": "test/channels/telegram/pitwall-reconnect.test.mjs",
+      "status": "fork-only"
+    },
+    {
       "path": "test/channels/telegram/production.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/rate-limit.test.mjs",
       "status": "equal"
     },
     {
@@ -1894,6 +2719,35 @@
     },
     {
       "path": "test/channels/telegram/telegram.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/thinking-cadence.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/thinking-default.test.mjs",
+      "status": "fork-only"
+    },
+    {
+      "path": "test/channels/telegram/thinking-traces.test.mjs",
+      "status": "reviewed-fork-difference",
+      "reason": "New Telegram bots default to off; explicit toggle choices continue to round-trip through configuration and status."
+    },
+    {
+      "path": "test/channels/telegram/voice-restart.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/voice-runtime.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/voice.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/telegram/workspace-card.test.mjs",
       "status": "equal"
     },
     {
@@ -1910,6 +2764,10 @@
     },
     {
       "path": "test/channels/wecom-app/config-store.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/wecom-app/runtime.test.mjs",
       "status": "equal"
     },
     {
@@ -1950,6 +2808,10 @@
     },
     {
       "path": "test/channels/wecom/startup.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/wecom/stream-supervisor.test.mjs",
       "status": "equal"
     },
     {
@@ -2009,7 +2871,15 @@
       "status": "fork-only"
     },
     {
+      "path": "test/channels/whatsapp/markdown.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/channels/whatsapp/production.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/channels/whatsapp/state-store.test.mjs",
       "status": "equal"
     },
     {
@@ -2021,9 +2891,39 @@
       "status": "equal"
     },
     {
+      "path": "test/checked-delivery.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/clear-command.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/client-delivery-settings.test.mjs",
       "status": "reviewed-fork-difference",
       "reason": "Test embedded upstream settings separately; retain Feishu shared-app and manual QQ UI expectations."
+    },
+    {
+      "path": "test/client-ds-bot-session-avatars.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/client-ds-bot-settings.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/client-i18n-bundle.test.mjs",
+      "status": "reviewed-fork-difference",
+      "reason": "Verify the fork package identity and connection-center labels in the built client across supported locales."
+    },
+    {
+      "path": "test/client-i18n-dynamic.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/client-i18n-ru.test.mjs",
+      "status": "reviewed-fork-difference",
+      "reason": "Verify upstream Russian translations and the documented English fallback allowlist for fork-only UI keys."
     },
     {
       "path": "test/client-interface-language.test.mjs",
@@ -2036,6 +2936,15 @@
     {
       "path": "test/client-lifecycle.test.mjs",
       "status": "equal"
+    },
+    {
+      "path": "test/client-plugin-page.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/client-service.test.mjs",
+      "status": "reviewed-fork-difference",
+      "reason": "Exercise the embedded upstream client service independently; fork wrapper behavior has separate tests."
     },
     {
       "path": "test/client-ui.test.mjs",
@@ -2067,6 +2976,22 @@
       "status": "equal"
     },
     {
+      "path": "test/conversation-describe.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/conversation-directory-settings.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/conversation-directory.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/conversation-key-targets.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/conversation-workspace-bind-recovery.test.mjs",
       "status": "equal"
     },
@@ -2080,6 +3005,10 @@
     },
     {
       "path": "test/conversation-workspace-switch-order.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/default-workspace.test.mjs",
       "status": "equal"
     },
     {
@@ -2120,6 +3049,23 @@
     },
     {
       "path": "test/delivery-service.test.mjs",
+      "status": "reviewed-fork-difference",
+      "reason": "Keep the rolled-over DS Bot delivery regression at top level so Node 22 does not cancel it when an unrelated parent test finishes. Assertions and runtime behavior remain unchanged."
+    },
+    {
+      "path": "test/delivery-sync-language.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/delivery-sync-settings-ui.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/delivery-sync-settings.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/delivery-sync-targets.test.mjs",
       "status": "equal"
     },
     {
@@ -2141,6 +3087,18 @@
     {
       "path": "test/display-metadata.test.mjs",
       "status": "fork-only"
+    },
+    {
+      "path": "test/ds-bot-binding.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/ds-bot-handoff.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/email-channel-gate.test.mjs",
+      "status": "equal"
     },
     {
       "path": "test/feishu-client-api.test.mjs",
@@ -2175,6 +3133,34 @@
       "status": "fork-only"
     },
     {
+      "path": "test/feishu-voice-editor.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/fixtures/client-shell/README.md",
+      "status": "equal"
+    },
+    {
+      "path": "test/fixtures/client-shell/client.js",
+      "status": "equal"
+    },
+    {
+      "path": "test/fixtures/client-shell/cordis.patch.yml",
+      "status": "equal"
+    },
+    {
+      "path": "test/fixtures/client-shell/host.js",
+      "status": "equal"
+    },
+    {
+      "path": "test/fixtures/client-shell/package.json",
+      "status": "equal"
+    },
+    {
+      "path": "test/fixtures/connection-diagnostics.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/fixtures/management-rpc.mjs",
       "status": "equal"
     },
@@ -2191,7 +3177,23 @@
       "status": "fork-only"
     },
     {
+      "path": "test/group-history-ui.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/group-history.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/harness-early-failure.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/harness-reply-tracker.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/helpers/deferred-images.mjs",
       "status": "equal"
     },
     {
@@ -2207,21 +3209,71 @@
       "status": "equal"
     },
     {
+      "path": "test/history-reader-http.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/history-reader.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/host-bound-questions.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/host-channel-contract.test.mjs",
+      "status": "fork-only"
+    },
+    {
+      "path": "test/host-gateway-peer-contract.test.mjs",
+      "status": "fork-only"
+    },
+    {
       "path": "test/host-harness-connection.test.mjs",
       "status": "reviewed-fork-difference",
       "reason": "Test the upstream entrypoint separately; fork integration is covered by fork-host tests."
+    },
+    {
+      "path": "test/host-harness-peer.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/host-language-bundle.test.mjs",
+      "status": "reviewed-fork-difference",
+      "reason": "Exercise the built fork Host with test-only Host peer stubs and disabled personal connectors, without installing duplicate runtime peer packages."
     },
     {
       "path": "test/host-language.test.mjs",
       "status": "equal"
     },
     {
+      "path": "test/host-live-chunk-contract.test.mjs",
+      "status": "fork-only"
+    },
+    {
+      "path": "test/host-live-contract.test.mjs",
+      "status": "fork-only"
+    },
+    {
       "path": "test/host-modern-harness-api.test.mjs",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "Retain the regression for revision-aware streaming when a replacement agent reuses an attempt id and a prior lifecycle delivers late frames."
     },
     {
       "path": "test/host-peer-range.test.mjs",
       "status": "fork-only"
+    },
+    {
+      "path": "test/host-rpc-contract.test.mjs",
+      "status": "fork-only"
+    },
+    {
+      "path": "test/host-session-admission-contract.test.mjs",
+      "status": "fork-only"
+    },
+    {
+      "path": "test/host-session-binding.test.mjs",
+      "status": "equal"
     },
     {
       "path": "test/host-session-coordinator.test.mjs",
@@ -2238,6 +3290,14 @@
     },
     {
       "path": "test/image-fallback.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/image-input-settings-ui.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/image-input.test.mjs",
       "status": "equal"
     },
     {
@@ -2269,6 +3329,10 @@
       "status": "equal"
     },
     {
+      "path": "test/message-mode-settings.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/model-command.test.mjs",
       "status": "equal"
     },
@@ -2285,11 +3349,47 @@
       "status": "equal"
     },
     {
+      "path": "test/nearby-history.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/outbound-artifact-consumer.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/outbound-artifact-prompt.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/outbound-artifact-recovery.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/outbound-artifact.test.mjs",
       "status": "equal"
     },
     {
+      "path": "test/permission-bridge.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/permission-command.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/preset-command.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/preset-workspaces.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/qq-final-answer.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/queued-message-durability.test.mjs",
       "status": "equal"
     },
     {
@@ -2309,6 +3409,10 @@
       "status": "equal"
     },
     {
+      "path": "test/session-archive.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/session-bind-command.test.mjs",
       "status": "equal"
     },
@@ -2318,6 +3422,18 @@
     },
     {
       "path": "test/session-channel-labels.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/session-corrupt-recovery.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/session-create-prebinding.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/session-missing-recovery.test.mjs",
       "status": "equal"
     },
     {
@@ -2337,12 +3453,40 @@
       "status": "fork-only"
     },
     {
+      "path": "test/sidebar-settings-ui.test.mjs",
+      "status": "equal"
+    },
+    {
+      "path": "test/sidebar-settings.test.mjs",
+      "status": "equal"
+    },
+    {
       "path": "test/support/filesystem.mjs",
       "status": "equal"
     },
     {
+      "path": "test/support/live-host-probe.mjs",
+      "status": "fork-only"
+    },
+    {
+      "path": "test/support/live-host.mjs",
+      "status": "fork-only"
+    },
+    {
+      "path": "test/support/packed-host-probe.mjs",
+      "status": "fork-only"
+    },
+    {
+      "path": "test/support/real-host-gateway.mjs",
+      "status": "fork-only"
+    },
+    {
       "path": "test/tarball.test.mjs",
       "status": "fork-only"
+    },
+    {
+      "path": "test/telegram-menu-scopes.test.mjs",
+      "status": "equal"
     },
     {
       "path": "test/update-rpc.test.mjs",

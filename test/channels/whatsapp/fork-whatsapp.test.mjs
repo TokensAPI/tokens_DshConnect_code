@@ -99,6 +99,9 @@ async function committedArtifact(t, {
     const events = agent.session.events;
     agent.session = { header: agent.session.header, snapshotEvents: () => [...events] };
   }
+  const closeConsumer = registry.openConsumer(sessionId, rpcId);
+  registry.observeClaimedMessage(agent.session, { source: { rpcId } }, 1);
+  t.after(closeConsumer);
   await writeFile(join(workspace, fileName), content);
   const tool = createOutboundArtifactTool({ registry });
   const exec = {

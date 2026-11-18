@@ -129,7 +129,7 @@ test('Host passes one shared Feishu application service to IM and personal autho
 
 test('connection center activates every upstream channel and isolates shared application failure', async () => {
   const names = ['Feishu', 'Weixin', 'Dingtalk', 'Wecom', 'WecomApp', 'Qq', 'Slack',
-    'Telegram', 'Discord', 'Whatsapp', 'IMessage', 'Office', 'FeishuPersonal', 'DingtalkPersonal'];
+    'Telegram', 'Discord', 'Whatsapp', 'IMessage', 'Email', 'Matrix', 'Office', 'FeishuPersonal', 'DingtalkPersonal'];
   for (const failApplication of [false, true]) {
     const calls = new Map();
     const errors = [];

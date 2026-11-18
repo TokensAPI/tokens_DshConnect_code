@@ -1,10 +1,11 @@
+import { ConnectionError, normalizeConnectionError } from '../../connection-error.js';
 import { BotName } from '../../bot-alias.js';
 import * as React from "react";
 
 import { FeishuLogoGlyph } from "../../channel-logos.js";
 import { CredentialActionIcon, CredentialBindingPanel, QrActionIcon } from "../../credential-binding.js";
-import { CollapsibleAccountSection } from "../shared/collapsible-account.js";
-import { h } from "../../i18n.js";
+import { AccountSettingsToggle, CollapsibleAccountSection } from "../shared/collapsible-account.js";
+import { h, localizeTemplate, localizeText } from "../../i18n.js";
 import {
   FEISHU_ENDPOINTS,
   FEISHU_REGISTRATION_OPERATIONS,
@@ -208,8 +209,14 @@ function Heading({
       hasBots
         ? h("div", {
             className: "bxf-totalBadge dim-onlineBadge",
-            "aria-label": `已接入 ${totals.configured} 个机器人，其中 ${totals.connected} 个在线`,
-          }, h("span", null, `${totals.connected} / ${totals.configured} 在线`))
+            "aria-label": localizeTemplate('已接入 {configured} 个机器人，其中 {connected} 个在线', {
+              configured: totals.configured,
+              connected: totals.connected,
+            }),
+          }, h("span", null, localizeTemplate('{connected} / {configured} 在线', {
+            connected: totals.connected,
+            configured: totals.configured,
+          })))
         : null,
     ),
   );
@@ -230,7 +237,7 @@ function SharedApplicationBinding({ applications, value, onChange, onBind, busy,
       }, applications.map((application) => h("option", {
         key: application.applicationId,
         value: application.applicationId,
-      }, `${application.name} · ${application.appIdMasked}${application.usedByPersonal ? " · 个人授权共用" : ""}`))),
+      }, localizeTemplate("{value0} · {value1}{value2}", { value0: localizeText(application.name), value1: localizeText(application.appIdMasked), value2: localizeText(application.usedByPersonal ? " · 个人授权共用" : "") })))),
       h(Button, {
         kind: "primary",
         size: "small",
@@ -320,9 +327,9 @@ function QrPane({ provision, now, onRefresh, onCancel, busy }) {
               ? h("img", {
                 src: qrSource,
                 alt: repairing
-                  ? `用于为${botName}补全权限与回调的一次性授权二维码`
+                  ? localizeTemplate('用于为{bot}补全权限与回调的一次性授权二维码', { bot: botName })
                   : grantingGroupMessages
-                    ? `用于为${botName}开通群消息权限的一次性授权二维码`
+                    ? localizeTemplate('用于为{bot}开通群消息权限的一次性授权二维码', { bot: botName })
                     : "用于创建可复用飞书应用并接入机器人的一次性授权二维码",
                 onError: () => setImageFailed(true),
               })
@@ -335,7 +342,9 @@ function QrPane({ provision, now, onRefresh, onCancel, busy }) {
         ),
         h("div", {
           className: "bxf-countdown dim-countdown",
-          "aria-label": expired ? "二维码已失效" : `二维码剩余 ${formatRemaining(remaining)}`,
+          "aria-label": expired
+            ? "二维码已失效"
+            : localizeTemplate('二维码剩余 {remaining}', { remaining: formatRemaining(remaining) }),
         },
           h("div", { className: "bxf-countdownTop dim-countdownTop", "aria-hidden": "true" },
             h("span", null, expired ? "等待刷新" : "二维码有效时间"),
@@ -348,9 +357,9 @@ function QrPane({ provision, now, onRefresh, onCancel, busy }) {
         h("div", { className: "bxf-stateLabel dim-stateLabel" },
           h("span", { className: "bxf-dot dim-stateDot", "data-tone": "warning" }),
           h("span", null, repairing
-            ? `正在为「${botName}」补全权限与回调`
+            ? localizeTemplate('正在为「{bot}」补全权限与回调', { bot: botName })
             : grantingGroupMessages
-              ? `正在为「${botName}」开通群消息权限`
+              ? localizeTemplate('正在为「{bot}」开通群消息权限', { bot: botName })
               : "正在创建应用并接入机器人")),
         h("h3", null, expired
           ? "刷新二维码后继续"
@@ -360,7 +369,7 @@ function QrPane({ provision, now, onRefresh, onCancel, busy }) {
               ? "使用飞书确认群消息权限"
               : "使用飞书扫码创建应用并接入机器人"),
         h("p", null, repairing
-          ? "扫码会更新现有飞书应用，增量补充当前缺少的卡片按钮回调、读取用户消息内图片或文件所需的 im:message:readonly（飞书显示为“获取单聊、群组消息”）、上传机器人图片或文件所需的 im:resource、接收群内其他机器人 @ 当前机器人所需的 im:message.group_at_msg.include_bot:readonly，以及原生命令面板所需的 application:app_slash_command:read / write；不会创建新应用。确认页只显示当前缺少项，完成后此机器人会短暂重连，其他机器人不受影响。"
+          ? "扫码会更新现有飞书应用，增量补充当前缺少的卡片按钮回调、接收未 @ 群消息所需的 im:message.group_msg、读取用户消息内图片或文件所需的 im:message:readonly（飞书显示为“获取单聊、群组消息”）、上传机器人图片或文件所需的 im:resource、接收群内其他机器人 @ 当前机器人所需的 im:message.group_at_msg.include_bot:readonly，以及原生命令面板所需的 application:app_slash_command:read / write；不会创建新应用，群回复方式保持不变，实际收到的群消息和文件会自动保存。确认页只显示当前缺少项，完成后此机器人会短暂重连，其他机器人不受影响。"
           : grantingGroupMessages
             ? "扫码会更新现有飞书应用，只增量开通“获取群组中所有消息”权限；不会创建新应用。确认后会自动启用“响应所有群消息”，其他机器人不受影响。"
             : "本次会创建一个可供 IM 机器人与个人授权共用的飞书自建应用，并先接入机器人。不会自动授权个人账号；个人授权可稍后在“应用授权”中复用此应用。已接入的机器人不会受到影响。"),
@@ -445,7 +454,7 @@ function ProvisionError({ error, provision, onRetry, onCancel, busy }) {
         h("h3", null, repairing
           ? "权限与回调没有补全完成"
           : grantingGroupMessages ? "群消息权限没有开通完成" : "新机器人没有添加完成"),
-        h("p", null, error.message),
+        h(ConnectionError, { error: error }),
         error.code ? h("span", { className: "bxf-errorCode" }, error.code) : null,
         h("div", { className: "bxf-actions dim-viewActions" },
           h(Button, { kind: "primary", onClick: onRetry, disabled: busy },
@@ -504,7 +513,7 @@ function RemoveConfirmation({ bot, busy, onConfirm, onCancel }) {
       }
     },
   },
-    h("h4", { id: titleId }, `从 DeepSeek Harness 移除“${bot.bot.name}”？`),
+    h("h4", { id: titleId }, localizeTemplate('从 DeepSeek Harness 移除“{name}”？', { name: bot.bot.name })),
     h("p", { id: descriptionId },
       "此操作会停止这个机器人的连接，并删除保存在本机的接入配置和凭据。飞书开放平台中的应用不会被自动删除，其他机器人也不受影响。"),
     h("div", { className: "bxf-actions dim-viewActions" },
@@ -514,7 +523,7 @@ function RemoveConfirmation({ bot, busy, onConfirm, onCancel }) {
   );
 }
 
-/** One select for the step-push presentation: off / per-step posts / process card. */
+/** One select for the step-push presentation. */
 function StepPushEditor({ value = false, mode = "post", disabled = false, onSave, onModeSave }) {
   const titleId = React.useId();
   const helpId = `${titleId}-help`;
@@ -544,7 +553,7 @@ function StepPushEditor({ value = false, mode = "post", disabled = false, onSave
         if (value === true) await onSave?.(false);
         return;
       }
-      const nextMode = next === "streaming_card" ? "streaming_card" : "post";
+      const nextMode = ["streaming_card", "live_cot"].includes(next) ? next : "post";
       // Enabling (or switching presentation) may need both writes; the flag
       // must land before the mode so the runtime never sees a mode without
       // step push enabled.
@@ -555,7 +564,9 @@ function StepPushEditor({ value = false, mode = "post", disabled = false, onSave
 
   const helpText = current === "off"
     ? "适合日常问答：执行过程中不显示工具调用等中间步骤，只回复最终结果"
-    : current === "streaming_card"
+    : current === "live_cot"
+      ? "使用飞书原生思考过程展示推理、工具调用与结果，最终答案单独发送"
+      : current === "streaming_card"
       ? "推荐长任务使用：过程与最终答案都在同一张卡片里实时更新，不刷屏"
       : "每一步都单独发一条消息（含工具调用和过程说明）；注意长任务会连续发送较多消息";
 
@@ -577,7 +588,7 @@ function StepPushEditor({ value = false, mode = "post", disabled = false, onSave
           id: helpId,
           className: "dim-presetTooltip",
           role: "tooltip",
-        }, "设置任务执行过程的呈现方式：不显示、实时卡片或逐步消息"))),
+        }, "设置任务执行过程的呈现方式：不显示、原生直播、实时卡片或逐步消息"))),
     saving
       ? h("span", { className: "dim-feishuGroupControlStatus", role: "status" }, "保存中…")
       : null),
@@ -589,6 +600,7 @@ function StepPushEditor({ value = false, mode = "post", disabled = false, onSave
     onChange: change,
   },
   h("option", { value: "off" }, "不显示过程（只发送最终答案）"),
+  h("option", { value: "live_cot" }, "实时直播（飞书原生思考过程）"),
   h("option", { value: "streaming_card" }, "实时过程卡（全程一张卡片动态更新）"),
   h("option", { value: "post" }, "逐步直播（每一步单独发一条消息）")),
   h("p", { className: "dim-feishuGroupHelp" }, helpText),
@@ -645,6 +657,19 @@ export function BotCard({
   },
     h("div", { className: "bxf-cardBody dim-botCardBody" },
       h(CollapsibleAccountSection, {
+        settings: h(BotSettingsButton, {
+          channel: "feishu",
+          botId: connection.botId,
+          botName: bot.name,
+          connected,
+          accessPolicy: connection.accessPolicy,
+          channelSettings: {
+            groupResponseMode: connection.groupResponseMode,
+            mentionTopicReply: connection.mentionTopicReply,
+            slashPanel: connection.slashPanel,
+            groupMessagePermissionGranted: connection.groupMessagePermissionGranted,
+          },
+        }),
         id: `bxf-settings-${connection.botId.replace(/[^a-zA-Z0-9_-]/g, "-")}`,
         header: h("div", { className: "bxf-connectedTop dim-botCardTop" },
           h("div", { className: "bxf-botIdentity dim-botIdentity" },
@@ -669,21 +694,11 @@ export function BotCard({
               formatCheckedTime,
               healthState: stateForDisplay,
             }),
-            h(BotSettingsButton, {
-              channel: "feishu",
-              botId: connection.botId,
-              botName: bot.name,
-              connected,
-              accessPolicy: connection.accessPolicy,
-              channelSettings: {
-                groupResponseMode: connection.groupResponseMode,
-                groupTopicReply: connection.groupTopicReply,
-                groupMessagePermissionGranted: connection.groupMessagePermissionGranted,
-              },
-            }))),
+            h(AccountSettingsToggle))),
       },
         h(WorkspaceEditor, {
           workspace: connection.workspace,
+          locked: connection.conversationDirectory?.enabled === true,
           disabled: Boolean(busy),
           onSave: onWorkspaceSave,
         }),
@@ -712,7 +727,7 @@ export function BotCard({
       provisionContent
         ? h("section", {
             className: "bxf-botProvision dim-botProvision",
-            "aria-label": `${bot.name}的飞书授权流程`,
+            "aria-label": localizeTemplate('{bot}的飞书授权流程', { bot: bot.name }),
             "data-provision-for": connection.botId,
             ref: provisionRef,
             tabIndex: -1,
@@ -724,7 +739,7 @@ export function BotCard({
             h(Button, {
               className: "dim-cardAction", onClick: onReconnect,
               disabled: Boolean(busy), "aria-busy": busy === "reconnect" ? "true" : undefined,
-              "aria-label": `${connected ? "检查连接" : "重试连接"}${bot.name}`,
+              "aria-label": localizeTemplate(connected ? '检查连接{name}' : '重试连接{name}', { name: bot.name }),
             }, busy === "reconnect" ? (connected ? "检查中…" : "正在连接…") : connected ? "检查连接" : "重试连接"),
             h("span", { className: "bxf-repairAction" },
               h(Button, {
@@ -732,7 +747,7 @@ export function BotCard({
                 onClick: onRepairCallback,
                 disabled: Boolean(busy) || repairDisabled,
                 "aria-busy": busy === "callback-repair" ? "true" : undefined,
-                "aria-label": `为${bot.name}补全权限与回调`,
+                "aria-label": localizeTemplate('为{bot}补全权限与回调', { bot: bot.name }),
                 "aria-describedby": repairTooltipId,
               }, busy === "callback-repair" ? "等待扫码…" : "补全权限"),
               h("span", {
@@ -741,14 +756,15 @@ export function BotCard({
                 role: "tooltip",
               },
                 h("strong", null, "补全范围"),
-                h("span", null, "增量添加当前缺少的卡片回调 card.action.trigger、读取消息内图片或文件所需的 im:message:readonly（飞书显示为“获取单聊、群组消息”）、上传机器人图片或文件所需的 im:resource，以及原生命令面板所需的 application:app_slash_command:read / write；确认页只显示当前缺少项，不会创建新应用。"))),
+                h("span", null, "增量添加当前缺少的卡片回调 card.action.trigger、接收未 @ 群消息所需的 im:message.group_msg、读取消息内图片或文件所需的 im:message:readonly（飞书显示为“获取单聊、群组消息”）、上传机器人图片或文件所需的 im:resource，以及原生命令面板所需的 application:app_slash_command:read / write；确认页只显示当前缺少项，不会创建新应用，群回复方式保持不变，实际收到的群消息和文件会自动保存。"))),
             h(Button, {
               className: "dim-cardAction", kind: "danger", onClick: onRequestRemove,
               disabled: Boolean(busy), ref: removeButtonRef,
-              "aria-label": `从 DeepSeek Harness 移除${bot.name}`,
+              "aria-label": localizeTemplate('从 DeepSeek Harness 移除{name}', { name: bot.name }),
             }, "移除接入")),
           summary ? h("div", { className: "bxf-healthSummary dim-cardSummary", "data-error": actionError || connection.error ? "true" : undefined },
             summary) : null,
+          (actionError || connection.error) ? h(ConnectionError, { error: actionError || connection.error, showMessage: false }) : null,
           connection.lastMessageError ? h(LastMessageErrorSummary, {
             className: "bxf-healthSummary",
             error: connection.lastMessageError,
@@ -819,7 +835,7 @@ function PageError({ error, onRetry, busy }) {
     h("div", { className: "bxf-error dim-inlineError", role: "alert" },
       h("div", null,
         h("h3", null, "无法读取飞书机器人"),
-        h("p", null, error.message),
+        h(ConnectionError, { error: error }),
         error.code ? h("span", { className: "bxf-errorCode" }, error.code) : null,
         h("div", { className: "bxf-actions dim-viewActions" },
           h(Button, { kind: "primary", onClick: onRetry, disabled: busy },
@@ -862,6 +878,7 @@ export function mergeFeishuSnapshotState(
 }
 
 export function FeishuSettingsTab({ rpcCall }) {
+  const [operationError, setOperationError] = React.useState(null);
   const [model, setModel] = React.useState({
     phase: "loading",
     revision: 0,
@@ -911,7 +928,16 @@ export function FeishuSettingsTab({ rpcCall }) {
   }, [scheduleAnimationFrame]);
 
   const invoke = React.useCallback(async (endpoint, payload = {}, signal) => {
-    return unwrapRpcResult(await rpcCall(endpoint, payload, signal));
+    const operation = !['connection.status', 'provision.poll', 'provision.begin', 'provision.cancel'].includes(endpoint);
+    if (operation && mountedRef.current) setOperationError(null);
+    try {
+      const value = unwrapRpcResult(await rpcCall(endpoint, payload, signal));
+      if (operation && mountedRef.current) setOperationError(value?.testMessage?.error ?? value?.warnings?.[0] ?? null);
+      return value;
+    } catch (error) {
+      if (endpoint === 'bot.delete' && mountedRef.current && !signal?.aborted && error?.name !== 'AbortError') setOperationError(normalizeConnectionError(error));
+      throw error;
+    }
   }, [rpcCall]);
 
   const mergeSnapshot = React.useCallback((snapshot, { restoreProvisioning = false } = {}) => {
@@ -1073,9 +1099,9 @@ export function FeishuSettingsTab({ rpcCall }) {
         },
       }));
       announce(repairing
-        ? `${botName ?? "机器人"}的权限补全二维码已生成，请使用飞书扫码。`
+        ? localizeTemplate('{bot}的权限补全二维码已生成，请使用飞书扫码。', { bot: botName ?? "机器人" })
         : grantingGroupMessages
-          ? `${botName ?? "机器人"}的群消息权限二维码已生成，请使用飞书确认。`
+          ? localizeTemplate('{bot}的群消息权限二维码已生成，请使用飞书确认。', { bot: botName ?? "机器人" })
           : "授权二维码已生成，请使用飞书扫码。");
     } catch (error) {
       setModel((current) => ({
@@ -1194,8 +1220,8 @@ export function FeishuSettingsTab({ rpcCall }) {
           const targetBotName = targetBot?.bot.name ?? activeProvision.botName ?? "机器人";
           setModel((current) => ({ ...current, provisioning: null }));
           announce(grantingGroupMessages
-            ? `${targetBotName}已开通群消息权限，并启用“响应所有群消息”。`
-            : `${targetBotName}的权限与回调已补全。`);
+            ? localizeTemplate('{bot}已开通群消息权限，并启用“响应所有群消息”。', { bot: targetBotName })
+            : localizeTemplate('{bot}的权限与回调已补全。', { bot: targetBotName }));
           if (activeProvision.botId) setFocusBotId(activeProvision.botId);
           await loadStatus({ silent: true, restoreProvisioning: false });
           return;
@@ -1285,11 +1311,11 @@ export function FeishuSettingsTab({ rpcCall }) {
           }
           setModel((current) => ({ ...current, provisioning: null }));
           announce(isCallbackRepair(provision)
-            ? `${targetBot.bot.name}的权限与回调已补全。`
+            ? localizeTemplate('{bot}的权限与回调已补全。', { bot: targetBot.bot.name })
             : isGroupMessagePermission(provision)
-              ? `${targetBot.bot.name}已开通群消息权限，并启用“响应所有群消息”。`
+              ? localizeTemplate('{bot}已开通群消息权限，并启用“响应所有群消息”。', { bot: targetBot.bot.name })
               : targetBot
-                ? `${targetBot.bot.name}已连接，可以在飞书中开始聊天。`
+                ? localizeTemplate('{bot}已连接，可以在飞书中开始聊天。', { bot: targetBot.bot.name })
                 : "新飞书机器人已连接，可以开始聊天。");
           if (result.botId) setFocusBotId(result.botId);
           return;
@@ -1405,8 +1431,8 @@ export function FeishuSettingsTab({ rpcCall }) {
         setTestNoticesByBot((current) => ({ ...current, [botId]: testNotice }));
       }
       announce(testNotice ?? (connection.connected
-        ? `${bot.name}连接检查完成。`
-        : `${bot.name}已重新连接。`));
+        ? localizeTemplate('{bot}连接检查完成。', { bot: bot.name })
+        : localizeTemplate('{bot}已重新连接。', { bot: bot.name })));
     } catch (error) {
       const failure = new Error("连接检查失败，请稍后重试。");
       failure.code = error?.code;
@@ -1483,11 +1509,11 @@ export function FeishuSettingsTab({ rpcCall }) {
       if (mountedRef.current && workspaceFence.canCommitMutation(snapshotVersion)) {
         mergeSnapshot(snapshot);
       }
-      announce(`${bot.name}已从此 DeepSeek Harness 移除；飞书开放平台中的应用未被删除。`);
+      announce(localizeTemplate('{bot}已从此 DeepSeek Harness 移除；飞书开放平台中的应用未被删除。', { bot: bot.name }));
       scheduleAnimationFrame(() => addButtonRef.current?.focus(), "focus");
     } catch (error) {
       setBotError(botId, error);
-      announce(`${bot.name}移除失败，请重试。`);
+      announce(localizeTemplate('{bot}移除失败，请重试。', { bot: bot.name }));
     } finally {
       const shouldRefresh = workspaceFence.endMutation();
       if (shouldRefresh && mountedRef.current) void loadStatus({ silent: true });
@@ -1585,6 +1611,7 @@ export function FeishuSettingsTab({ rpcCall }) {
   }, h(AgentPresetCatalogContext.Provider, {
     value: model.agentPresetCatalog ?? EMPTY_AGENT_PRESET_CATALOG,
   }, h("section", { className: "bxf-page dim-channelPage", "aria-label": "飞书机器人设置" },
+    operationError ? h(ConnectionError, { error: operationError }) : null,
     h(Heading, {
       totals: model.totals,
       onAdd: () => void startProvisioning(),
@@ -1609,7 +1636,7 @@ export function FeishuSettingsTab({ rpcCall }) {
     model.statusError
       ? h("div", { className: "bxf-statusNotice dim-statusNotice", role: "status" },
           h(AlertIcon, { size: 16 }),
-          h("span", null, `状态自动刷新失败：${model.statusError.message}`),
+          h("span", null, localizeTemplate('状态自动刷新失败：{error}', { error: localizeText(model.statusError.message) })),
           h(Button, { size: "small", onClick: () => void loadStatus({ silent: true }), disabled: pageBusy }, "立即重试"))
       : null,
     model.phase === "loading"

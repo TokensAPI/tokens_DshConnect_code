@@ -1,3 +1,4 @@
+import { localizeTemplate, localizeText } from '../../i18n.js';
 import * as React from 'react';
 
 import { DingtalkLogoGlyph } from '../../channel-logos.js';
@@ -114,7 +115,7 @@ function CapabilitiesPanel({ status }) {
         h('div', null,
           h('h3', null, '已安装业务能力'),
           h('p', null, skills?.available
-            ? `${skills.count} 个官方 Skills · DWS ${skills.version ?? status?.version ?? ''}`
+            ? localizeTemplate("{value0} 个官方 Skills · DWS {value1}", { value0: localizeText(skills.count), value1: localizeText(skills.version ?? status?.version ?? '') })
             : '连接后自动安装官方 dingtalk-* Skills'))),
       capabilities.length > 0
         ? h('div', { className: 'ddp-capabilityGrid' }, capabilities.map((capability) =>
@@ -124,7 +125,7 @@ function CapabilitiesPanel({ status }) {
         : h('div', { className: 'ddp-empty' }, connected ? '正在准备官方业务 Skills' : '完成个人授权后显示实际安装能力'),
       Array.isArray(skills?.collisions) && skills.collisions.length > 0
         ? h('div', { className: 'ddp-warning' },
-            `检测到 ${skills.collisions.length} 个同名自定义 Skill，已保留原目录且未覆盖。`)
+            localizeTemplate("检测到 {value0} 个同名自定义 Skill，已保留原目录且未覆盖。", { value0: localizeText(skills.collisions.length) }))
         : null,
       h('p', { className: 'ddp-source' }, '能力清单来自本机已校验安装的 DWS Skills，不是界面预设权限。')));
 }
@@ -201,7 +202,7 @@ export function DingtalkPersonalSettings({ rpcCall }) {
       h(HealthItem, {
         active: status?.installed === true,
         title: '官方组件',
-        detail: status?.installed ? `DWS ${status.version ?? '已安装'}` : '按需校验安装',
+        detail: status?.installed ? localizeTemplate("DWS {value0}", { value0: localizeText(status.version ?? '已安装') }) : '按需校验安装',
       }),
       h(HealthItem, {
         active: connected,
@@ -211,7 +212,7 @@ export function DingtalkPersonalSettings({ rpcCall }) {
       h(HealthItem, {
         active: status?.skills?.available === true,
         title: '业务 Skills',
-        detail: status?.skills?.available ? `${status.skills.count} 个已安装` : '连接后自动安装',
+        detail: status?.skills?.available ? localizeTemplate("{value0} 个已安装", { value0: localizeText(status.skills.count) }) : '连接后自动安装',
       })),
     h('div', { className: 'ddp-tabs', role: 'tablist', 'aria-label': '钉钉个人账号设置视图' },
       h('button', {

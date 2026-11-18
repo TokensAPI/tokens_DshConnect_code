@@ -72,7 +72,10 @@ function composeHome() {
     '',
     '- insert:',
     '    - id: dsh-connect-live-probe',
-    '      name: dsh-connect-live-probe',
+    // Older loaders resolve bare names relative to the loader package, not
+    // DSH_HOME. An absolute entry keeps the probe on the selected host without
+    // adding anything to that host's node_modules.
+    `      name: ${JSON.stringify(pathToFileURL(join(probe, 'index.mjs')).href)}`,
     '',
   ].join('\n'));
   // Node resolves the bundles from the profile directory upwards: this
@@ -89,6 +92,7 @@ function composeHome() {
 function launch(home, report) {
   return new Promise((settle) => {
     const child = spawn(process.execPath, [
+      '--expose-internals',
       hostLauncher(), '--profile', PROFILE, '--port', '0', '--no-open',
     ], {
       cwd: home,

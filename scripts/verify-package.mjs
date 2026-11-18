@@ -149,7 +149,7 @@ for (const name of ['@xmanrui/dsh-feishu', '@xmanrui/dsh-weixin', '@xmanrui/dsh-
   }
 }
 const directDependencies = {
-  undici: '7.29.0',
+  undici: '7.30.1',
   'dingtalk-stream': '2.1.4',
   '@tencent-connect/qqbot-nodejs': '1.0.4',
   '@wecom/aibot-node-sdk': '1.0.7',

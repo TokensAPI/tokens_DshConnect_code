@@ -6,6 +6,14 @@ This file records the notable changes in each dsh-im release. Its format follows
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-11-05 (local PitWall build)
+
+- Integrate xmanrui/dsh-im v5.10.0 (`c826bfa415d79669d8ebba206cf4a1eac554d8e2`), preserving connection-center navigation, personal Feishu/DingTalk authorization, shared Feishu applications, private updater and Host compatibility fixes.
+- Keep in-flight Telegram Harness tasks and artifact consumers alive during polling recovery. Hold calls not yet dispatched for up to five minutes of continuous reconnection waiting; resume after connectivity returns. Do not retry requests with an uncertain remote outcome. Plugin/process shutdown still cancels pending delivery; recovery is not persisted across process restarts.
+- Preserve upstream Email, Matrix, DS Bot, conversation isolation, queue and delivery changes. Keep the UNLICENSED QQ QR connector excluded and retain manual QQ setup.
+- Preserve upstream Russian translations; fork-only UI keys explicitly fall back to English where Russian translations are absent.
+- This is a local package, not a Registry release or an installation into an existing profile.
+
 ## [2.9.8] - 2026-11-04
 
 ### Fixed / 修复
@@ -491,8 +499,7 @@ This file records the notable changes in each dsh-im release. Its format follows
 - 改进 npm 发布包结构，保留 CLI 入口并避免安装脚本拦截。
   Improved npm package contents to preserve the CLI entry point and avoid install-script blocking.
 
-[Unreleased]: https://github.com/sobermh/tokens_DshConnect_code/compare/v2.9.8...HEAD
-[2.9.8]: https://github.com/sobermh/tokens_DshConnect_code/compare/v2.9.7...v2.9.8
+[Unreleased]: https://github.com/sobermh/tokens_DshConnect_code/compare/v2.9.6...HEAD
 [2.9.7]: https://github.com/sobermh/tokens_DshConnect_code/compare/v2.9.6...v2.9.7
 [2.9.6]: https://github.com/sobermh/tokens_DshConnect_code/compare/v2.9.5...v2.9.6
 [2.9.0]: https://github.com/sobermh/tokens_DshConnect_code/compare/1653fe5...v2.9.0
@@ -528,3 +535,5 @@ This file records the notable changes in each dsh-im release. Its format follows
 [0.13.0]: https://github.com/xmanrui/dsh-im/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/xmanrui/dsh-im/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/xmanrui/dsh-im/releases/tag/v0.11.0
+
+[2.9.8]: https://github.com/TokensAPI/tokens_DshConnect_code/compare/v2.9.7...v2.9.8

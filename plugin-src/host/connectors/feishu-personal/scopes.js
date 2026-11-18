@@ -12,6 +12,8 @@
  * `99991672 Access denied`), and the device-code login flow needs none of them.
  */
 export const TENANT_SCOPES = [
+    'im:message.group_msg',
+    'im:message:readonly',
     'application:app_slash_command:read',
     'application:app_slash_command:write',
     'application:bot.basic_info:read',

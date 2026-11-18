@@ -15,11 +15,13 @@ export class TelegramButtons {
     while (this.#items.size >= 2048) this.#items.delete(this.#items.keys().next().value);
     const id = randomBytes(12).toString('hex');
     const item = { id, target, buttons, selected: new Set(), busy: false, messageId: null };
+    const presentation = Promise.withResolvers();
+    item.presentation = presentation.promise;
     this.#items.set(id, item);
     return {
       markup: this.#markup(item),
-      attach: (messageId) => { item.messageId = messageId; },
-      discard: () => this.#items.delete(id),
+      attach: (messageId) => { item.messageId = messageId; presentation.resolve(); },
+      discard: () => { this.#items.delete(id); presentation.resolve(); },
     };
   }
 
@@ -42,6 +44,9 @@ export class TelegramButtons {
       await notice('该按钮已失效，请查看最新问题。');
       return;
     }
+    // Telegram can deliver a press before sendMessage's promise returns its id.
+    await item.presentation;
+    if (!this.#items.has(item.id) || !item.buttons.isActive()) return;
     const message = query.message;
     const inbound = {
       messageId: `callback:${query.id}`, senderId: String(query.from?.id ?? ''),

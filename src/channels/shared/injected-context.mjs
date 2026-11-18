@@ -1,8 +1,8 @@
 // Pair one injected context block with the user message that carried it.
 //
 // The prompt RPC carries no message source, so a channel encodes its source
-// block, its optional guidance, and any quoted reply as leading text of the
-// user prompt. `installInjectedContext` splits them back out at
+// block, its optional guidance, any quoted reply, and any collected
+// conversation-context blocks as leading text of the user prompt. `installInjectedContext` splits them back out at
 // `agent/pre-step` -- after the Agent inbox claimed the message but before
 // anything is committed -- and enters plugin-sourced context messages beside
 // the untouched user text. Pairing is decided by message identity, never by
@@ -36,6 +36,21 @@ export const DEFAULT_REPLY_LABEL = 'Quoted';
 
 /** Fallback row label for a source block whose fields carry no readable value. */
 export const DEFAULT_SOURCE_LABEL = 'Source';
+
+/** Fallback row label for one collected conversation-context block. */
+export const DEFAULT_CONTEXT_LABEL = 'Context';
+
+/** Static note stamped into every context block; states what the block is not. */
+export const CONTEXT_NOTE = 'Conversation context collected by the bot; not the current question.';
+
+/**
+ * Every field one conversation-context block may carry. A block is ours only
+ * when its body is a non-empty object drawn from these keys with a named
+ * collector and verbatim content, mirroring how source blocks are judged.
+ */
+export const CONTEXT_BLOCK_FIELDS = Object.freeze([
+  'note', 'collector', 'room', 'event', 'sender', 'ts', 'content',
+]);
 
 /**
  * Every field the source producer can project -- the same canonical list the
@@ -143,6 +158,40 @@ function isSourceBlock(body) {
     && fields.every((field) => SOURCE_BLOCK_FIELDS.includes(field));
 }
 
+/**
+ * Decide whether one body is a conversation-context block this plugin wrote.
+ * Shape-only, like `isSourceBlock`: a well-formed object of unknown fields is
+ * user text that happens to use the tag and is left alone.
+ *
+ * @param body - the text between the context tags.
+ * @returns whether the body is one of our context blocks.
+ */
+function isContextBlock(body) {
+  const parsed = parseBlockJson(body);
+  if (parsed === null) return false;
+  const fields = Object.keys(parsed);
+  return fields.length > 0
+    && fields.every((field) => CONTEXT_BLOCK_FIELDS.includes(field))
+    && typeof parsed.collector === 'string' && parsed.collector.trim().length > 0
+    && typeof parsed.content === 'string' && parsed.content.length > 0;
+}
+
+/**
+ * One-line account of a context block: the row label plus the collector roles
+ * that produced it, e.g. `上下文 · thread-root+reply`.
+ */
+function contextSummary(body, labels) {
+  const parsed = parseBlockJson(body);
+  if (parsed === null) return null;
+  const collector = typeof parsed.collector === 'string' && parsed.collector.trim()
+    ? parsed.collector.trim().slice(0, 64)
+    : '';
+  if (!collector) return null;
+  return bound(`${typeof labels?.context === 'string' && labels.context
+    ? labels.context
+    : DEFAULT_CONTEXT_LABEL} \u00b7 ${collector}`);
+}
+
 /** Bound one summary to the row's declared maximum. */
 function bound(summary) {
   if (!summary) return null;
@@ -206,6 +255,19 @@ function blockAt(text, cursor, labels) {
       },
     };
   }
+  const context = delimited(text, cursor, tags.contextOpen, tags.contextClose);
+  if (context !== null) {
+    // Collected material the bot points at, so it precedes the question it
+    // belongs to; a body outside the block schema stays user text verbatim.
+    if (!isContextBlock(context.body)) return null;
+    return {
+      end: context.end,
+      block: {
+        position: 'before', form: 'notice', summary: contextSummary(context.body, labels),
+        text: text.slice(cursor, context.end),
+      },
+    };
+  }
   const reply = delimited(text, cursor, tags.replyOpen, tags.replyClose);
   if (reply !== null) {
     const summary = replySummary(reply.body, labels);
@@ -252,19 +314,16 @@ export function splitLeadingInjectedContext(text, options = {}) {
 }
 
 /**
- * Build the context message for one parsed block, attributed to this producer.
+ * Build one context message with the producer-owned source kind required by V4.
  * @param block - one parsed block.
  * @param newId - identity factory for the new message.
- * @param plugin - producer name, used as the message source kind.
+ * @param plugin - source plugin name recorded on it.
  * @returns one identified user-role context message.
  */
 function contextMessage(block, newId, plugin) {
-  // DSH 0.2 (session format v4) refuses the retired `{ kind: 'plugin', plugin }`
-  // wrapper and fails the whole append, which wedges the IM session. The producer
-  // owns its kind, the way upstream first-party producers name themselves.
   const source = block.form === 'notice' && typeof block.summary === 'string'
-    ? { kind: plugin, form: 'notice', summary: block.summary }
-    : { kind: plugin, form: block.form };
+    ? { kind: `plugin:${plugin}`, form: 'notice', summary: block.summary }
+    : { kind: `plugin:${plugin}`, form: block.form };
   return {
     id: newId(),
     role: 'user',

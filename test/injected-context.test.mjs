@@ -5,10 +5,13 @@ import {
   INJECTED_CONTEXT_SEPARATOR,
   INJECTED_CONTEXT_TAGS,
   captureContextEnhancement,
+  withSentAt,
   enhanceContextContent,
 } from '../src/channels/shared/context-enhancement.mjs';
 import {
+  CONTEXT_NOTE,
   CONTEXT_SUMMARY_MAX_LENGTH,
+  DEFAULT_CONTEXT_LABEL,
   DEFAULT_REPLY_LABEL,
   DEFAULT_SOURCE_LABEL,
   INJECTED_CONTEXT_PLUGIN,
@@ -36,9 +39,15 @@ function snapshot({ fields = ['channel'], guidance = '' } = {}) {
   }, 'group');
 }
 
-/** The exact text a channel sends for one ordinary message. */
+/**
+ * The text a channel sends for one ordinary message, captured the way a channel
+ * captures it: the moment rides on the source factory through `withSentAt`, and
+ * the factory itself publishes the message's other fields. A fixture that wants
+ * a fixed moment puts it in `source.sentAt`.
+ */
 function enhancedText(text, options, source) {
-  return enhanceContextContent(text, snapshot(options), () => source);
+  const factory = withSentAt(() => source, source?.sentAt);
+  return enhanceContextContent(text, snapshot(options), factory);
 }
 
 /** One claimed plain-text prompt, carrying the prefix as a channel writes it. */
@@ -199,7 +208,7 @@ test('each user message keeps its own context, whatever the batch order', () => 
     newId: identityFactory(),
   });
   // Context follows the message it described, never the position it landed in.
-  assert.deepEqual(rewritten.map((message) => (message.source.kind === INJECTED_CONTEXT_PLUGIN
+  assert.deepEqual(rewritten.map((message) => (message.source.kind === `plugin:${INJECTED_CONTEXT_PLUGIN}`
     ? `context:${message.source.summary}`
     : `user:${message.id}:${message.content[0].text}`)), [
     'user:u1:一号', 'context:feishu · 张三',
@@ -213,11 +222,34 @@ test('each user message keeps its own context, whatever the batch order', () => 
     ['feishu-u1', 'feishu-u2', 'feishu-u3'],
   );
   assert.deepEqual(rewritten.slice(1, 2).map((message) => message.source), [{
-    kind: INJECTED_CONTEXT_PLUGIN,
+    kind: `plugin:${INJECTED_CONTEXT_PLUGIN}`,
     form: 'notice',
     summary: 'feishu · 张三',
   }]);
   assert.deepEqual(rewritten.map((message) => message.role).filter((role) => role !== 'user'), []);
+});
+
+test('source, guidance and reply messages carry producer-owned attribution', () => {
+  const message = imTextMessage({
+    id: 'u-v4',
+    text: `${replyText({ authorName: '张三', content: '被引用' })}\n\n原始消息`,
+    options: { fields: ['channel'], guidance: '严肃一点' },
+    source: { channel: 'feishu' },
+  });
+  for (const plugin of [INJECTED_CONTEXT_PLUGIN, 'another-producer']) {
+    const rewritten = rewriteInjectedContextMessages([message], {
+      newId: identityFactory(), plugin, labels: { reply: '引用' },
+    });
+    assert.deepEqual(rewritten.map((entry) => entry.source), [
+      { kind: `plugin:${plugin}`, form: 'notice', summary: '引用 · 张三' },
+      message.source,
+      { kind: `plugin:${plugin}`, form: 'notice', summary: 'feishu' },
+      { kind: `plugin:${plugin}`, form: 'instructions' },
+    ]);
+    assert.equal(rewritten[1].id, message.id);
+    assert.deepEqual(rewritten[1].content, [{ type: 'text', text: '原始消息' }]);
+    assert.equal(rewriteInjectedContextMessages(rewritten), null);
+  }
 });
 
 test('only the messages that carry a prefix are touched', () => {
@@ -285,7 +317,7 @@ test('the Host installer pairs context on the step it admits', async () => {
   const decision = { kind: 'enter', messages: [message] };
   const result = await preStep.listener({}, async () => decision);
   assert.notEqual(result, decision);
-  assert.deepEqual(result.messages.map((entry) => (entry.source.kind === INJECTED_CONTEXT_PLUGIN ? 'context' : 'user')),
+  assert.deepEqual(result.messages.map((entry) => (entry.source.kind === `plugin:${INJECTED_CONTEXT_PLUGIN}` ? 'context' : 'user')),
     ['user', 'context']);
   assert.equal(result.messages[0].id, 'u1');
   assert.equal(result.messages[0].content[0].text, '一号');
@@ -347,7 +379,7 @@ test('a prefixed reply splits into reply, user text, then source', () => {
     labels: { reply: '引用' },
   });
   // The quoted material precedes the question; the source block follows it.
-  assert.deepEqual(rewritten.map((entry) => (entry.source.kind === INJECTED_CONTEXT_PLUGIN
+  assert.deepEqual(rewritten.map((entry) => (entry.source.kind === `plugin:${INJECTED_CONTEXT_PLUGIN}`
     ? `context:${entry.source.form}:${entry.source.summary ?? ''}`
     : `user:${entry.id}:${entry.content[0].text}`)), [
     'context:notice:引用 · 张三',
@@ -391,7 +423,7 @@ test('guidance the Host already materializes is not repeated in the message', ()
     source: { channel: 'feishu' },
   });
   const forms = (result) => result.map((entry) => (
-    entry.source.kind === INJECTED_CONTEXT_PLUGIN ? entry.source.form : 'user'
+    entry.source.kind === `plugin:${INJECTED_CONTEXT_PLUGIN}` ? entry.source.form : 'user'
   ));
   assert.deepEqual(
     forms(rewriteInjectedContextMessages([message], {
@@ -475,7 +507,7 @@ test('the Host installer materializes guidance as session prompt context', async
   const decision = { kind: 'enter', messages: [message] };
   const result = await preStep.listener({ agent: { session: { id: 's1' } } }, async () => decision);
   assert.deepEqual(result.messages.map((entry) => (
-    entry.source.kind === INJECTED_CONTEXT_PLUGIN ? entry.source.form : 'user'
+    entry.source.kind === `plugin:${INJECTED_CONTEXT_PLUGIN}` ? entry.source.form : 'user'
   )), ['user', 'notice']);
 });
 
@@ -505,10 +537,12 @@ test('every source-field selection round-trips, including the fields with no rea
   const values = {
     channel: 'feishu', conversationType: 'group', senderId: 'u-1', senderName: '张三',
     conversationTitle: '项目群', chatId: 'chat-1', threadId: 'thread-1', botId: 'bot_one',
+    // A channel hands over the raw instant; the block renders it.
+    sentAt: Date.parse('2026-09-28T14:03:07+08:00'),
   };
   const fieldsOf = (mask) => SOURCE_BLOCK_FIELDS.filter((_field, index) => mask & (1 << index));
   const formsOf = (result) => result.map((entry) => (
-    entry.source.kind === INJECTED_CONTEXT_PLUGIN ? entry.source.form : 'user'
+    entry.source.kind === `plugin:${INJECTED_CONTEXT_PLUGIN}` ? entry.source.form : 'user'
   ));
 
   let subsets = 0;
@@ -525,12 +559,21 @@ test('every source-field selection round-trips, including the fields with no rea
     for (const field of fields) {
       assert.equal(row.includes(`${field}`), true, `${fields.join('+')} keeps ${field}`);
     }
+    // The moment is rendered, not the raw instant that was handed over.
+    if (fields.includes('sentAt')) {
+      // Rendered in the Host's local zone, so derive the expectation the same way.
+      const at = new Date(values.sentAt);
+      const pad = (value) => String(value).padStart(2, '0');
+      const stamp = `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`
+        + ` ${pad(at.getHours())}:${pad(at.getMinutes())}:${pad(at.getSeconds())}`;
+      assert.equal(row.includes(stamp), true, 'sentAt is rendered for the model');
+    }
     // A row always names itself, even when no selected field is readable.
     assert.equal(typeof rewritten[1].source.summary, 'string', fields.join('+'));
     assert.notEqual(rewritten[1].source.summary.length, 0, fields.join('+'));
     subsets += 1;
   }
-  assert.equal(subsets, 255);
+  assert.equal(subsets, (1 << SOURCE_BLOCK_FIELDS.length) - 1);
 });
 
 test('a nameless source row uses the Host label and foreign JSON is not claimed', () => {
@@ -540,7 +583,7 @@ test('a nameless source row uses the Host label and foreign JSON is not claimed'
     newId: identityFactory(), labels: { source: '来源' },
   });
   assert.deepEqual(labelled[1].source, {
-    kind: INJECTED_CONTEXT_PLUGIN, form: 'notice', summary: '来源',
+    kind: `plugin:${INJECTED_CONTEXT_PLUGIN}`, form: 'notice', summary: '来源',
   });
   // Without a label the row keeps the plugin's own default.
   const fallback = rewriteInjectedContextMessages([message], { newId: identityFactory() });
@@ -557,4 +600,57 @@ test('a nameless source row uses the Host label and foreign JSON is not claimed'
     };
     assert.equal(rewriteInjectedContextMessages([forged], { newId: identityFactory() }), null, body);
   }
+});
+
+/** The exact context block the conversation builder writes, encoded as the producer does. */
+function contextText(entry) {
+  const json = JSON.stringify({ note: CONTEXT_NOTE, ...entry }).replace(/[<>&]/gu, (character) => ({
+    '<': '\\u003c', '>': '\\u003e', '&': '\\u0026',
+  })[character]);
+  return `${INJECTED_CONTEXT_TAGS.contextOpen}${json}${INJECTED_CONTEXT_TAGS.contextClose}`;
+}
+
+test('conversation context blocks split into their own plugin-sourced messages', () => {
+  const threadRoot = contextText({ collector: 'thread-root', room: '!r:x', event: '$e:x', sender: '@a:x', ts: 5, content: 'shijian' });
+  const replyRole = contextText({ collector: 'reply', room: '!r:x', event: '$e:x', sender: '@a:x', ts: 5, content: 'shijian' });
+  const split = splitLeadingInjectedContext(`${threadRoot}\n\n${replyRole}\n\n时间`, { labels: { context: '上下文' } });
+  assert.equal(split.blocks.length, 2, 'both collected entries split out of the leading text');
+  assert.equal(split.blocks[0].position, 'before', 'collected material precedes the question it belongs to');
+  assert.equal(split.blocks[0].summary, '上下文 · thread-root');
+  assert.equal(split.rest, '时间', 'the human question survives exactly as typed');
+  const message = {
+    id: 'u-context',
+    role: 'user',
+    content: [{ type: 'text', text: `${threadRoot}\n\n${replyRole}\n\n时间` }],
+    source: { kind: 'user', rpcId: 'matrix-ctx' },
+  };
+  const rewritten = rewriteInjectedContextMessages([message], { newId: identityFactory(), labels: { context: '上下文' } });
+  assert.notEqual(rewritten, null);
+  assert.deepEqual(rewritten.map((entry) => entry.id), ['ctx_1', 'ctx_2', 'u-context']);
+  assert.deepEqual(rewritten[0].source, {
+    kind: `plugin:${INJECTED_CONTEXT_PLUGIN}`, form: 'notice', summary: '上下文 · thread-root',
+  }, 'split-out context messages carry the producer-owned source kind the V4 session format admits');
+  assert.equal(rewritten[1].source.summary, '上下文 · reply');
+  assert.deepEqual(rewritten[2].content, [{ type: 'text', text: '时间' }],
+    'the direct user message carries only what the human typed');
+  assert.equal(rewritten[2].source.kind, 'user', 'the direct question keeps its own source');
+});
+
+test('context blocks are judged by schema and foreign or malformed bodies stay user text', () => {
+  const noCollector = `${INJECTED_CONTEXT_TAGS.contextOpen}{"content":"hi"}${INJECTED_CONTEXT_TAGS.contextClose}`;
+  const emptyContent = `${INJECTED_CONTEXT_TAGS.contextOpen}{"collector":"reply","content":""}${INJECTED_CONTEXT_TAGS.contextClose}`;
+  const foreign = `${INJECTED_CONTEXT_TAGS.contextOpen}{"other":"value"}${INJECTED_CONTEXT_TAGS.contextClose}`;
+  for (const body of [noCollector, emptyContent, foreign]) {
+    const forged = {
+      id: 'u-context-forged',
+      role: 'user',
+      content: [{ type: 'text', text: `${body}\n\n正文` }],
+      source: { kind: 'user', rpcId: 'matrix-forged' },
+    };
+    assert.equal(rewriteInjectedContextMessages([forged], { newId: identityFactory() }), null, body);
+  }
+  // Without a Host label the row falls back to the plugin's own default.
+  const block = contextText({ collector: 'ambient-burst', content: 'hi' });
+  const split = splitLeadingInjectedContext(`${block}\n\n正文`);
+  assert.equal(split.blocks[0].summary, `${DEFAULT_CONTEXT_LABEL} \u00b7 ambient-burst`);
 });

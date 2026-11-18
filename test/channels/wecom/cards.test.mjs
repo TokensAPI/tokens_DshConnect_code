@@ -67,7 +67,7 @@ test('task buttons return their result without appending menu cards or invoking 
       await f.bridge.accept(f.frame('/m'));
       const card = f.latest();
       assert.equal(f.sent[0].card.select_list.length, 3);
-      assert.equal(card.button_list.length, 6);
+      assert.equal(card.button_list.length, 6, 'WeCom supports at most six buttons per card');
       await f.click(label);
       const replies = f.sent.slice(2);
       assert.ok(replies.some((entry) => result.test(entry.content ?? '')));
@@ -397,7 +397,8 @@ test('successful menus do not clear Harness failures or errors from concurrent r
   release({ sessions: [] });
   await recovering;
   assert.deepEqual(f.bridge.status.lastMessageError, concurrentFailure);
-  assert.equal(f.bridge.status.lastError, 'Harness offline');
+  assert.equal(f.bridge.status.lastMessageError.code, 'HARNESS_CONNECT');
+  assert.equal(f.bridge.status.lastError, concurrentFailure.message);
 });
 
 test('all list pages stay within WeCom button limits', () => {

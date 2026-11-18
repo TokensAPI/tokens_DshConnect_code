@@ -310,7 +310,7 @@ test('HarnessClient safely rejects invalid, unregistered, ambiguous, and subagen
   client.rpc = async (method) => {
     if (method === 'workspace.list') {
       if (mode === 'invalid-workspaces') return { items: null, archivedSessionIds: [] };
-      if (mode === 'unregistered') {
+      if (mode === 'unregistered' || mode === 'unknown-session') {
         return {
           items: [{ workspaceId: 'workspace', path: '/tmp/workspace', sessionIds: [] }],
           archivedSessionIds: [],
@@ -333,7 +333,7 @@ test('HarnessClient safely rejects invalid, unregistered, ambiguous, and subagen
       };
     }
     if (method === 'session.list') {
-      if (mode === 'summary-missing') return { items: [] };
+      if (mode === 'summary-missing' || mode === 'unknown-session') return { items: [] };
       return {
         items: [{
           sessionId: 'session-target',
@@ -369,10 +369,18 @@ test('HarnessClient safely rejects invalid, unregistered, ambiguous, and subagen
     client.adoptWorkspaceSession('session-target'),
     (error) => error?.code === 'session-workspace-ambiguous',
   );
+  // A workspace that accounts for the session but has no summary yet is a read
+  // problem, not an unknown id.
   mode = 'summary-missing';
   await assert.rejects(
     client.adoptWorkspaceSession('session-target'),
     (error) => error?.code === 'session-summary-unavailable',
+  );
+  // Nobody knows the id: the answer is "no such session", not "try again later".
+  mode = 'unknown-session';
+  await assert.rejects(
+    client.adoptWorkspaceSession('session-target'),
+    (error) => error?.code === 'session-not-registered',
   );
   mode = 'subagent';
   await assert.rejects(
@@ -710,6 +718,7 @@ test('ask opens the interaction watcher before prompting and closes it with the 
   });
   client.ensureRunning = async () => true;
   client.rpc = async (method, payload, _timeoutMs, options) => {
+    if (method === 'workspace.list') return { items: [], archivedSessionIds: [] };
     if (method === 'session.history') {
       historyCalls += 1;
       if (historyCalls === 1) return { events: [] };
@@ -829,6 +838,7 @@ for (const { startEvent } of DISPATCH_RENAMES) test(`approval interactions expos
   });
   client.ensureRunning = async () => true;
   client.rpc = async (method, payload, _timeoutMs, options) => {
+    if (method === 'workspace.list') return { items: [], archivedSessionIds: [] };
     if (method === 'session.history') {
       historyCalls += 1;
       // Baseline and mux-open refresh both precede this new prompt. The mux
@@ -1005,6 +1015,7 @@ for (const { startEvent, subCallSegment } of DISPATCH_RENAMES) test(`reconnect h
   });
   client.ensureRunning = async () => true;
   client.rpc = async (method, _payload, _timeoutMs, options) => {
+    if (method === 'workspace.list') return { items: [], archivedSessionIds: [] };
     if (method === 'session.history') return { events: historyEvents };
     assert.equal(method, 'session.prompt');
     const events = [
@@ -1137,6 +1148,7 @@ test('concurrent asks on one Harness session receive interactions only for their
   });
   client.ensureRunning = async () => true;
   client.rpc = async (method, payload, _timeoutMs, options) => {
+    if (method === 'workspace.list') return { items: [], archivedSessionIds: [] };
     if (method === 'session.history') return { events: [] };
     assert.equal(method, 'session.prompt');
     prompts.push({ text: payload.content[0].text, rpcId: options.rpcId });
@@ -1234,6 +1246,7 @@ test('channel-specific clients share interaction ownership for the same Harness 
     });
     client.ensureRunning = async () => true;
     client.rpc = async (method, payload, _timeoutMs, options) => {
+      if (method === 'workspace.list') return { items: [], archivedSessionIds: [] };
       if (method === 'session.history') return { events: [] };
       assert.equal(method, 'session.prompt');
       prompts.push({ channel, rpcId: options.rpcId, text: payload.content[0].text });
@@ -1313,6 +1326,7 @@ test('a reconnect revalidates same-session ownership before accepting replayed q
   });
   client.ensureRunning = async () => true;
   client.rpc = async (method, payload, _timeoutMs, options) => {
+    if (method === 'workspace.list') return { items: [], archivedSessionIds: [] };
     if (method === 'session.history') return { events: historyEvents };
     assert.equal(method, 'session.prompt');
     prompts.push({ text: payload.content[0].text, rpcId: options.rpcId });
@@ -1457,6 +1471,7 @@ test('a new ask adopts a replayed orphan question before its queued prompt can r
   });
   client.ensureRunning = async () => true;
   client.rpc = async (method) => {
+    if (method === 'workspace.list') return { items: [], archivedSessionIds: [] };
     if (method === 'session.history') return { events: oldHistory };
     assert.equal(method, 'session.prompt');
     prompted.resolve();
@@ -1513,6 +1528,7 @@ test('an orphan approval is delivered only as a recovered interaction for safe r
   });
   client.ensureRunning = async () => true;
   client.rpc = async (method) => {
+    if (method === 'workspace.list') return { items: [], archivedSessionIds: [] };
     if (method === 'session.history') return { events: oldHistory };
     assert.equal(method, 'session.prompt');
     prompted.resolve();

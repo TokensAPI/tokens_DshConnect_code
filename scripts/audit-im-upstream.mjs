@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
 // Audit source content, not commit titles: a selective sync is not a full merge.
-const ref = process.argv[2] ?? '34a370bfef1fcf577327b822d2091d2157ded0f8';
+const ref = process.argv[2] ?? 'c826bfa415d79669d8ebba206cf4a1eac554d8e2';
 const roots = ['src', 'plugin-src', 'test'];
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
 const revision = git('rev-parse', `${ref}^{commit}`).trim();

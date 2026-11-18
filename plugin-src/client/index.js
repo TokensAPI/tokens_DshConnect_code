@@ -67,7 +67,7 @@ export function LoopbackRecoveryNotice({ recovery, onNavigate = replacePageLocat
   }, '使用 localhost 重新打开'));
 }
 
-export function IMSettingsTab(props) {
+export function IMSettingsTab(props = {}) {
   const {
     workspaceDirectoryPicker,
     browserLocation = globalThis.location,
@@ -215,12 +215,14 @@ export function apply(ctx) {
 
   const rpcCalls = createConnectionRpcCalls(ctx.connection);
   return applyUpstreamIm(ctx, {
-    registerSettings: (registration) => ctx.slots.register({
+    Panel: IMSettingsTab,
+    panelDependencies: rpcCalls,
+    registerSettings: (registration, component) => ctx.slots.register({
       ...registration,
       id: 'connect',
       order: 20,
       label: () => t('连接中心'),
       inject: () => ({ ...rpcCalls, ...registration.inject() }),
-    }, IMSettingsTab),
+    }, component),
   });
 }

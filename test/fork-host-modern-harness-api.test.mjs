@@ -262,6 +262,9 @@ for (const modernSession of [false, true]) test(`modern adapter routes an approv
       throw new Error(`unexpected invoke ${endpoint}`);
     },
     async stream(request) {
+      if (`${request.namespace}/${request.method}` === 'workspace/follow') {
+        return asyncValues({ type: 'baseline', value: { items: [], archivedSessionIds: [] } });
+      }
       if (`${request.namespace}/${request.method}` !== 'session/follow') {
         throw new Error('unexpected stream');
       }
@@ -354,6 +357,9 @@ for (const modernSession of [false, true]) test(`modern adapter routes structure
       throw new Error(`unexpected invoke ${endpoint}`);
     },
     async stream(request) {
+      if (`${request.namespace}/${request.method}` === 'workspace/follow') {
+        return asyncValues({ type: 'baseline', value: { items: [], archivedSessionIds: [] } });
+      }
       if (`${request.namespace}/${request.method}` !== 'session/follow') {
         throw new Error('unexpected stream');
       }

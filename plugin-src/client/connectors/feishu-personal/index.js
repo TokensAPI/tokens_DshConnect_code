@@ -1,3 +1,4 @@
+import { localizeTemplate, localizeText } from '../../i18n.js';
 import * as React from 'react';
 
 import { FeishuLogoGlyph } from '../../channel-logos.js';
@@ -92,7 +93,7 @@ export function deriveFeishuPersonalView(status) {
 export function statusMessage(status) {
   if (!status) return '正在读取本机连接状态';
   if (status.userAuthorized === true) {
-    return status.userName ? `已授权账号：${status.userName}` : '个人账号已授权，可以使用飞书能力。';
+    return status.userName ? localizeTemplate("已授权账号：{value0}", { value0: localizeText(status.userName) }) : '个人账号已授权，可以使用飞书能力。';
   }
   if (typeof status.message === 'string' && status.message.trim()) return status.message;
   if (status.selectionRequired) return '检测到多个飞书应用，请选择本次个人授权使用的应用。';
@@ -124,14 +125,14 @@ export function CapabilityPanel({ status }) {
   const personalIdentity = authorization?.personalIdentity;
   const skills = authorization?.skills;
   const skillsDetail = skills?.available === true
-    ? [`${skills.count} 个已安装`, skills.version].filter(Boolean).join(' · ')
+    ? [localizeTemplate("{value0} 个已安装", { value0: localizeText(skills.count) }), skills.version].filter(Boolean).join(' · ')
     : '本机 Skills 清单不可用';
   return h('div', { className: 'dfp-tabPanel', role: 'tabpanel' },
     h('section', { className: 'dfp-section' },
       h('div', { className: 'dfp-sectionHead' },
         h('div', null,
           h('h3', null, '实际权限'),
-          h('p', null, status?.checkedAt ? `最近检查：${new Date(status.checkedAt).toLocaleString()}` : '尚未完成实时检查'))),
+          h('p', null, status?.checkedAt ? localizeTemplate("最近检查：{value0}", { value0: localizeText(new Date(status.checkedAt).toLocaleString()) }) : '尚未完成实时检查'))),
       h('div', { className: 'dfp-evidenceList' },
         h('div', { className: 'dfp-evidence', 'data-on': String(appIdentity?.verified === true) },
           h('span', { className: 'dfp-healthDot', 'aria-hidden': 'true' }),
@@ -146,22 +147,22 @@ export function CapabilityPanel({ status }) {
           h('span', null,
             h('strong', null, '个人身份'),
             h('small', null, personalIdentity?.verified === true
-              ? `Token ${personalIdentity.tokenStatus ?? 'valid'} · 服务端验证通过`
-              : personalIdentity?.available === true ? `Token ${personalIdentity.tokenStatus ?? '可用'}` : '个人授权不可用'),
+              ? localizeTemplate("Token {value0} · 服务端验证通过", { value0: localizeText(personalIdentity.tokenStatus ?? 'valid') })
+              : personalIdentity?.available === true ? localizeTemplate("Token {value0}", { value0: localizeText(personalIdentity.tokenStatus ?? '可用') }) : '个人授权不可用'),
             h('code', null, authorization?.source ?? 'lark-cli auth status'))),
         h('div', { className: 'dfp-evidence', 'data-on': String(applicationScopes?.available === true) },
           h('span', { className: 'dfp-healthDot', 'aria-hidden': 'true' }),
           h('span', null,
             h('strong', null, '实际应用权限'),
             h('small', null, applicationScopes?.available === true
-              ? `${applicationScopes.count ?? 0} 项已授权 · ${applicationScopes.pendingCount ?? 0} 项待生效`
+              ? localizeTemplate("{value0} 项已授权 · {value1} 项待生效", { value0: localizeText(applicationScopes.count ?? 0), value1: localizeText(applicationScopes.pendingCount ?? 0) })
               : '暂时无法读取应用权限'),
             h('code', null, applicationScopes?.source ?? 'GET /open-apis/application/v6/scopes'))),
         h('div', { className: 'dfp-evidence', 'data-on': String((scopes?.count ?? 0) > 0) },
           h('span', { className: 'dfp-healthDot', 'aria-hidden': 'true' }),
           h('span', null,
             h('strong', null, '实际个人权限'),
-            h('small', null, `${scopes?.count ?? 0} 项权限 · ${domains.length} 个能力域`),
+            h('small', null, localizeTemplate("{value0} 项权限 · {value1} 个能力域", { value0: localizeText(scopes?.count ?? 0), value1: localizeText(domains.length) })),
             h('code', null, authorization?.source ?? 'lark-cli auth status'))),
         h('div', { className: 'dfp-evidence', 'data-on': String(skills?.available === true) },
           h('span', { className: 'dfp-healthDot', 'aria-hidden': 'true' }),
@@ -177,12 +178,12 @@ export function CapabilityPanel({ status }) {
         : null,
       applicationScopeValues.length > 0
         ? h('details', { className: 'dfp-scopeDetails' },
-            h('summary', null, `查看 ${applicationScopeValues.length} 项实际应用权限`),
+            h('summary', null, localizeTemplate("查看 {value0} 项实际应用权限", { value0: localizeText(applicationScopeValues.length) })),
             h('div', { className: 'dfp-scopeList' }, applicationScopeValues.map((scope) => h('code', { key: scope }, scope))))
         : null,
       pendingApplicationScopeValues.length > 0
         ? h('details', { className: 'dfp-scopeDetails', 'data-tone': 'warning' },
-            h('summary', null, `查看 ${pendingApplicationScopeValues.length} 项待生效应用权限`),
+            h('summary', null, localizeTemplate("查看 {value0} 项待生效应用权限", { value0: localizeText(pendingApplicationScopeValues.length) })),
             h('div', { className: 'dfp-scopeList' }, pendingApplicationScopeValues.map((scope) => h('code', { key: scope }, scope))))
         : null,
       domains.length > 0
@@ -193,7 +194,7 @@ export function CapabilityPanel({ status }) {
         : null,
       scopeValues.length > 0
         ? h('details', { className: 'dfp-scopeDetails' },
-            h('summary', null, `查看 ${scopeValues.length} 项实际个人权限`),
+            h('summary', null, localizeTemplate("查看 {value0} 项实际个人权限", { value0: localizeText(scopeValues.length) })),
             h('div', { className: 'dfp-scopeList' }, scopeValues.map((scope) => h('code', { key: scope }, scope))))
         : null,
       h('p', { className: 'dfp-evidenceNote' }, '应用权限来自飞书租户授权状态；个人权限来自当前账号 OAuth 授权。')));
@@ -312,7 +313,7 @@ export function FeishuPersonalSettings({ rpcCall }) {
       h(HealthItem, {
         enabled: scopeCount > 0,
         title: '实际权限',
-        detail: scopeCount > 0 ? `${scopeCount} 项已读取` : connected ? '正在读取' : '等待连接',
+        detail: scopeCount > 0 ? localizeTemplate("{value0} 项已读取", { value0: localizeText(scopeCount) }) : connected ? '正在读取' : '等待连接',
       })),
     h('div', { className: 'dfp-tabs', role: 'tablist', 'aria-label': '飞书个人账号设置视图' },
       h('button', {
@@ -362,7 +363,7 @@ export function FeishuPersonalSettings({ rpcCall }) {
                   applications.map((application) => h('option', {
                     key: application.applicationId,
                     value: application.applicationId,
-                  }, `${application.name} · ${application.appIdMasked}${application.botCount > 0 ? ' · 与机器人共用' : ''}`)),
+                  }, localizeTemplate("{value0} · {value1}{value2}", { value0: localizeText(application.name), value1: localizeText(application.appIdMasked), value2: localizeText(application.botCount > 0 ? ' · 与机器人共用' : '') }))),
                   h('option', { value: '__new__' }, '创建新的独立应用')),
                   choiceRequired
                     ? h('span', { className: 'dfp-fieldMessage' }, '检测到多个应用，请先选择本次授权使用的应用。')

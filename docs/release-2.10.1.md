@@ -29,6 +29,10 @@ for the complete clean-checkout build, pack, private-registry publication and
 redownload-verification procedure. Generated `lib/` and npm tarballs stay out
 of Git; build scripts produce the two runtime entries from the checked-in source.
 
+The rolled-over DS Bot delivery regression is also moved out of an unrelated
+async test to top level. This corrects Node 22 test cancellation without changing
+assertions or delivery runtime code.
+
 ## Local verification
 
 - Node 24.22.1: `npm run check` passed. Unit suite: 5,069 cases, 5,023 passed,
@@ -43,7 +47,7 @@ of Git; build scripts produce the two runtime entries from the checked-in source
 - Packed activation passed in isolated TokensCowork 0.5.25 (dsh 0.1.5-rc.2)
   and 0.7.15 (dsh 0.2.1-rc.2), including PDF return tool registration and all
   12 channel status routes. Temporary host homes were cleaned by the harness.
-- Upstream audit passed: 736 equal paths, 51 reviewed differences, 78 fork-only
+- Upstream audit passed: 735 equal paths, 52 reviewed differences, 78 fork-only
   paths, no missing upstream files or unreviewed differences. The opt-in default
   changes are explicit reviewed exceptions to the pinned upstream v5.10.0.
 

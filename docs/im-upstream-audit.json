@@ -1,10 +1,10 @@
 {
   "upstream": "c826bfa415d79669d8ebba206cf4a1eac554d8e2",
-  "local": "acc195cc1337e2005663a6a871238e9eef5a2fb5",
+  "local": "3e54203541d481db254acad94767ee278bcccff4",
   "complete": true,
   "counts": {
-    "equal": 736,
-    "reviewed-fork-difference": 51,
+    "equal": 735,
+    "reviewed-fork-difference": 52,
     "fork-only": 78
   },
   "files": [
@@ -3049,7 +3049,8 @@
     },
     {
       "path": "test/delivery-service.test.mjs",
-      "status": "equal"
+      "status": "reviewed-fork-difference",
+      "reason": "Keep the rolled-over DS Bot delivery regression at top level so Node 22 does not cancel it when an unrelated parent test finishes. Assertions and runtime behavior remain unchanged."
     },
     {
       "path": "test/delivery-sync-language.test.mjs",

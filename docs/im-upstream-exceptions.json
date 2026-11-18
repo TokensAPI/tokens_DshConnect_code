@@ -204,6 +204,10 @@
     "test/channels/telegram/thinking-traces.test.mjs": {
       "reason": "New Telegram bots default to off; explicit toggle choices continue to round-trip through configuration and status.",
       "sha256": "5b5599500baf60cdda4e740fcc3aa6228a7f8f48542d0864d2473233cbcf9b8a"
+    },
+    "test/delivery-service.test.mjs": {
+      "reason": "Keep the rolled-over DS Bot delivery regression at top level so Node 22 does not cancel it when an unrelated parent test finishes. Assertions and runtime behavior remain unchanged.",
+      "sha256": "6e80262415e60ad3f438d565132bde4f2be4e28a572d4f3e54b31b196cfccf93"
     }
   }
 }

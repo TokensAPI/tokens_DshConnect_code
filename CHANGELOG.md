@@ -15,6 +15,9 @@ This file records the notable changes in each dsh-im release. Its format follows
 - 补齐已发布的 2.10.0 源码、锁文件、测试与构建输入，保留 2.9.8 的宿主会话准入回归；发布仓库迁移到 `TokensAPI/tokens_DshConnect_code`，记录私有源手动发布与校验流程。
   Restore the published 2.10.0 source/build inputs and retain the 2.9.8 host-admission regression. Update the release repository to `TokensAPI/tokens_DshConnect_code` and document the private-registry pack/publish/verification procedure.
 
+- 将 DS Bot 会话切换投递测试恢复为独立用例，避免 Node 22 在父测试结束时取消子测试；不修改投递逻辑或断言。
+  Keep the rolled-over DS Bot delivery regression at top level to avoid Node 22 parent-test cancellation, without changing delivery logic or assertions.
+
 ## [2.10.0] - 2026-11-11
 
 - Integrate xmanrui/dsh-im v5.10.0 (`c826bfa415d79669d8ebba206cf4a1eac554d8e2`), preserving connection-center navigation, personal Feishu/DingTalk authorization, shared Feishu applications, private updater and Host compatibility fixes.

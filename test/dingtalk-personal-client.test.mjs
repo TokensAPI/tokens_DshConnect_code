@@ -51,6 +51,19 @@ test('DingTalk client accepts only the one-click official authorization URL', ()
   assert.equal(safeDingtalkPersonalHref(null), undefined);
 });
 
+test('DingTalk client accepts the DWS 1.0.62+ authorization URL with caller parameters', () => {
+  const withCaller = `${AUTH_URL}&caller=cli&callerUmt=Test_Umt-Value123`;
+  assert.equal(safeDingtalkPersonalHref(withCaller), withCaller);
+  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&corpId=dingcorp_test`), `${AUTH_URL}&corpId=dingcorp_test`);
+  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&caller=cli`), `${AUTH_URL}&caller=cli`);
+  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&callerUmt=Test_Umt`), `${AUTH_URL}&callerUmt=Test_Umt`);
+  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&caller=&callerUmt=Test_Umt`), undefined);
+  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&caller=cli&callerUmt=`), undefined);
+  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&caller=${'c'.repeat(65)}`), undefined);
+  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&callerUmt=${'u'.repeat(1025)}`), undefined);
+  assert.equal(safeDingtalkPersonalHref(`${withCaller}&state=unexpected`), undefined);
+});
+
 test('DingTalk personal status normalizes a completed login immediately', () => {
   assert.deepEqual(deriveDingtalkPersonalView({
     phase: 'authorizing',

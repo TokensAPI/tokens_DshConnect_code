@@ -54,6 +54,28 @@ test('only official DingTalk authorization URLs with safe parameters are accepte
   assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&state=unexpected`), undefined);
 });
 
+test('DWS 1.0.62+ authorization URLs with caller parameters are accepted', () => {
+  const corp = `${LOOPBACK_AUTH_URL}&corpId=dingcorp_test`;
+  const withCaller = `${LOOPBACK_AUTH_URL}&caller=cli&callerUmt=Test_Umt-Value123`;
+  assert.equal(trustedDingtalkAuthorizationUrl(`open ${corp}\n`), corp);
+  assert.equal(trustedDingtalkAuthorizationUrl(`open ${withCaller}\n`), withCaller);
+  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&caller=cli`), `${LOOPBACK_AUTH_URL}&caller=cli`);
+  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&callerUmt=Test_Umt`), `${LOOPBACK_AUTH_URL}&callerUmt=Test_Umt`);
+  assert.equal(trustedDingtalkAuthorizationUrl(`${corp}&caller=cli&callerUmt=Test_Umt`), `${corp}&caller=cli&callerUmt=Test_Umt`);
+  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&caller=&callerUmt=Test_Umt`), undefined);
+  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&caller=cli&callerUmt=`), undefined);
+  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&caller=${'c'.repeat(65)}`), undefined);
+  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&callerUmt=${'u'.repeat(1025)}`), undefined);
+  assert.equal(trustedDingtalkAuthorizationUrl(`${withCaller}&caller=cli`), undefined);
+  assert.equal(trustedDingtalkAuthorizationUrl(`${withCaller}&state=unexpected`), undefined);
+  assert.equal(trustedDingtalkAuthorizationUrl(withCaller.replace('127.0.0.1', 'evil.test')), undefined);
+
+  const urls = [];
+  const parser = createAuthorizationUrlParser((url) => urls.push(url));
+  parser.push(`{"url":"${withCaller}"}\n`);
+  assert.deepEqual(urls, [withCaller]);
+});
+
 test('authorization URL parser handles a URL split across stdout chunks', () => {
   const emitted = [];
   const parser = createAuthorizationUrlParser((url) => emitted.push(url));

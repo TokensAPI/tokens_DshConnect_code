@@ -6,6 +6,13 @@ This file records the notable changes in each dsh-im release. Its format follows
 
 ## [Unreleased]
 
+## [2.10.2] - 2026-11-24
+
+### Fixed / 修复
+
+- 钉钉个人账号授权：接受 DWS 1.0.62 起授权链接新增的可选参数 `caller`、`callerUmt`（非空且有长度上限），修复界面不出现授权入口、5 分钟后授权超时的问题；主机、路径、回调地址等其余校验不变，未知参数仍被拒绝。
+  Accept the optional `caller` and `callerUmt` parameters that DWS 1.0.62+ adds to the DingTalk authorization link (non-empty, length-bounded) in both the host parser and the client link check, so the authorize entry appears again instead of timing out after five minutes. All other checks stay strict and unknown parameters are still rejected.
+
 ## [2.10.1] - 2026-11-18
 
 ### Fixed / 修复

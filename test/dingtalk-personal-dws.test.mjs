@@ -12,9 +12,12 @@ import {
   trustedDingtalkAuthorizationUrl,
   validateDwsToolArgs,
 } from '../plugin-src/host/connectors/dingtalk-personal/dws.js';
-
-const AUTH_URL = 'https://login.dingtalk.com/oauth2/device/verify.htm?user_code=NFSZ-GHSD';
-const LOOPBACK_AUTH_URL = 'https://login.dingtalk.com/oauth2/auth?client_id=ding_test_client&redirect_uri=http%3A%2F%2F127.0.0.1%3A54321%2Fcallback&response_type=code&scope=openid+corpid&prompt=consent';
+import {
+  ACCEPTED_LINKS,
+  AUTH_URL,
+  LOOPBACK_AUTH_URL,
+  REJECTED_LINKS,
+} from './dingtalk-authorization-links.mjs';
 
 test('DWS status exposes account health without credential values', () => {
   assert.deepEqual(statusFromMap({
@@ -41,39 +44,61 @@ test('DWS status exposes account health without credential values', () => {
   });
 });
 
-test('only official DingTalk authorization URLs with safe parameters are accepted', () => {
-  assert.equal(trustedDingtalkAuthorizationUrl(`open ${AUTH_URL}\n`), AUTH_URL);
-  assert.equal(trustedDingtalkAuthorizationUrl(`open ${LOOPBACK_AUTH_URL}\n`), LOOPBACK_AUTH_URL);
-  assert.equal(trustedDingtalkAuthorizationUrl(AUTH_URL.replace('https:', 'http:')), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(AUTH_URL.replace('login.dingtalk.com', 'login.dingtalk.com.evil.test')), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(AUTH_URL.replace('/oauth2/device/verify.htm', '/oauth2/authorize')), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${AUTH_URL}&redirect=https://evil.test`), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl('https://login.dingtalk.com/oauth2/device/verify.htm?user_code=bad'), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(LOOPBACK_AUTH_URL.replace('127.0.0.1', 'evil.test')), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&redirect_uri=https://evil.test`), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&state=unexpected`), undefined);
+test('DingTalk links are trusted on origin, path, loopback callback and client id only', () => {
+  for (const url of ACCEPTED_LINKS) {
+    assert.equal(trustedDingtalkAuthorizationUrl(`open ${url}\n`), url, url);
+  }
+  for (const url of REJECTED_LINKS) {
+    assert.equal(trustedDingtalkAuthorizationUrl(`open ${url}\n`), undefined, url.slice(0, 200));
+  }
 });
 
-test('DWS 1.0.62+ authorization URLs with caller parameters are accepted', () => {
-  const corp = `${LOOPBACK_AUTH_URL}&corpId=dingcorp_test`;
-  const withCaller = `${LOOPBACK_AUTH_URL}&caller=cli&callerUmt=Test_Umt-Value123`;
-  assert.equal(trustedDingtalkAuthorizationUrl(`open ${corp}\n`), corp);
-  assert.equal(trustedDingtalkAuthorizationUrl(`open ${withCaller}\n`), withCaller);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&caller=cli`), `${LOOPBACK_AUTH_URL}&caller=cli`);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&callerUmt=Test_Umt`), `${LOOPBACK_AUTH_URL}&callerUmt=Test_Umt`);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${corp}&caller=cli&callerUmt=Test_Umt`), `${corp}&caller=cli&callerUmt=Test_Umt`);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&caller=&callerUmt=Test_Umt`), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&caller=cli&callerUmt=`), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&caller=${'c'.repeat(65)}`), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${LOOPBACK_AUTH_URL}&callerUmt=${'u'.repeat(1025)}`), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${withCaller}&caller=cli`), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(`${withCaller}&state=unexpected`), undefined);
-  assert.equal(trustedDingtalkAuthorizationUrl(withCaller.replace('127.0.0.1', 'evil.test')), undefined);
-
+test('authorization URL parser reports an untrusted DingTalk link once, without its values', () => {
   const urls = [];
-  const parser = createAuthorizationUrlParser((url) => urls.push(url));
-  parser.push(`{"url":"${withCaller}"}\n`);
-  assert.deepEqual(urls, [withCaller]);
+  const rejections = [];
+  const parser = createAuthorizationUrlParser((url) => urls.push(url), (details) => rejections.push(details));
+  assert.equal(parser.push('Starting login, help at https://example.com/help\n'), undefined);
+  assert.equal(rejections.length, 0);
+  const untrusted = `${LOOPBACK_AUTH_URL.replace('127.0.0.1', 'evil.test')}&secret=value-1`;
+  parser.push(`{"url":"${untrusted}"}\n`);
+  parser.push(`${LOOPBACK_AUTH_URL}\n`);
+  assert.deepEqual(urls, []);
+  assert.deepEqual(rejections, [{
+    reason: 'invalid-redirect-uri',
+    path: '/oauth2/auth',
+    params: ['client_id', 'redirect_uri', 'response_type', 'scope', 'prompt', 'secret'],
+  }]);
+  assert.deepEqual(parser.rejection(), rejections[0]);
+  assert.doesNotMatch(JSON.stringify(rejections), /evil|value-1|ding_test_client/);
+});
+
+test('DWS login ends at once with a clear message when the link is untrusted', async () => {
+  let killed = false;
+  const dws = createDws({
+    ensureDws: async () => 'dws',
+    dwsPath: async () => 'dws',
+    installedDwsVersion: async () => 'v1.0.99',
+    run: async (_bin, args, options) => {
+      if (args[1] === 'status') return { code: 0, stdout: '{"authenticated":false}', stderr: '' };
+      // Behaves like a login child that would wait for minutes unless it is cancelled.
+      return new Promise((_resolve, reject) => {
+        options.signal.addEventListener('abort', () => {
+          killed = true;
+          reject(new Error('dws command cancelled'));
+        }, { once: true });
+        options.onOutput(`${LOOPBACK_AUTH_URL.replace('127.0.0.1', 'evil.test')}\n`, 'stdout');
+      });
+    },
+  });
+  const started = Date.now();
+  await assert.rejects(dws.login(undefined, () => assert.fail('untrusted link must not be shown')), (error) => {
+    assert.match(error.message, /无法识别的授权链接/);
+    assert.doesNotMatch(error.message, /login\.dingtalk\.com|evil/);
+    assert.equal(error.dingtalkLinkRejection.reason, 'invalid-redirect-uri');
+    return true;
+  });
+  assert.equal(killed, true);
+  assert.ok(Date.now() - started < 5_000);
 });
 
 test('authorization URL parser handles a URL split across stdout chunks', () => {

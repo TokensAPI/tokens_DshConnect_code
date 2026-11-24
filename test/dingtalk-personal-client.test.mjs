@@ -18,6 +18,8 @@ import {
   DingtalkPersonalSettings,
   safeDingtalkPersonalHref,
 } from '../plugin-src/client/connectors/dingtalk-personal/index.js';
+import { trustedDingtalkAuthorizationUrl } from '../plugin-src/host/connectors/dingtalk-personal/dws.js';
+import { ACCEPTED_LINKS, REJECTED_LINKS } from './dingtalk-authorization-links.mjs';
 
 const AUTH_URL = 'https://login.dingtalk.com/oauth2/auth?client_id=ding_test_client&redirect_uri=http%3A%2F%2F127.0.0.1%3A54321%2Fcallback&response_type=code&scope=openid+corpid&prompt=consent';
 
@@ -46,22 +48,20 @@ test('DingTalk client accepts only the one-click official authorization URL', ()
   assert.equal(safeDingtalkPersonalHref(AUTH_URL), AUTH_URL);
   assert.equal(safeDingtalkPersonalHref(AUTH_URL.replace('https:', 'http:')), undefined);
   assert.equal(safeDingtalkPersonalHref(AUTH_URL.replace('127.0.0.1', 'evil.test')), undefined);
-  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&state=unexpected`), undefined);
+  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&state=any&caller=cli`), `${AUTH_URL}&state=any&caller=cli`);
   assert.equal(safeDingtalkPersonalHref('javascript:alert(1)'), undefined);
   assert.equal(safeDingtalkPersonalHref(null), undefined);
 });
 
-test('DingTalk client accepts the DWS 1.0.62+ authorization URL with caller parameters', () => {
-  const withCaller = `${AUTH_URL}&caller=cli&callerUmt=Test_Umt-Value123`;
-  assert.equal(safeDingtalkPersonalHref(withCaller), withCaller);
-  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&corpId=dingcorp_test`), `${AUTH_URL}&corpId=dingcorp_test`);
-  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&caller=cli`), `${AUTH_URL}&caller=cli`);
-  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&callerUmt=Test_Umt`), `${AUTH_URL}&callerUmt=Test_Umt`);
-  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&caller=&callerUmt=Test_Umt`), undefined);
-  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&caller=cli&callerUmt=`), undefined);
-  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&caller=${'c'.repeat(65)}`), undefined);
-  assert.equal(safeDingtalkPersonalHref(`${AUTH_URL}&callerUmt=${'u'.repeat(1025)}`), undefined);
-  assert.equal(safeDingtalkPersonalHref(`${withCaller}&state=unexpected`), undefined);
+test('DingTalk client applies the same link rules as the host parser', () => {
+  for (const url of ACCEPTED_LINKS) {
+    assert.equal(safeDingtalkPersonalHref(url), url, url);
+    assert.equal(trustedDingtalkAuthorizationUrl(`${url}\n`), url, url);
+  }
+  for (const url of REJECTED_LINKS) {
+    assert.equal(safeDingtalkPersonalHref(url), undefined, url.slice(0, 200));
+    assert.equal(trustedDingtalkAuthorizationUrl(`${url}\n`), undefined, url.slice(0, 200));
+  }
 });
 
 test('DingTalk personal status normalizes a completed login immediately', () => {

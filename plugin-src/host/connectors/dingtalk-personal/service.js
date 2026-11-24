@@ -122,6 +122,16 @@ export function createDingtalkPersonalService({ dws, ensureSkills, inspectSkills
     setState({ phase: 'preparing', message: '正在检查钉钉连接状态...' });
     runConnect(force, controller.signal)
       .catch((error) => {
+        const rejection = error?.dingtalkLinkRejection;
+        if (rejection !== undefined) {
+          // Reason, path and parameter names only; never the link or its values.
+          logger?.warn?.(
+            'DWS returned an untrusted DingTalk authorization link (reason=%s, path=%s, params=%s)',
+            rejection.reason,
+            rejection.path ?? '-',
+            rejection.params.join(',') || '-',
+          );
+        }
         if (!controller.signal.aborted) setState({ phase: 'error', message: errorText(error) });
       })
       .finally(() => {

@@ -158,3 +158,44 @@ test('DingTalk personal RPC validates transport payloads before calling the serv
     'disconnect',
   ]);
 });
+
+test('an untrusted DingTalk link ends the connect flow with a message and a value-free log line', async () => {
+  const warnings = [];
+  const dws = {
+    async status() { return liveStatus(); },
+    async provision() {},
+    async login() {
+      const error = new Error('钉钉官方组件返回了无法识别的授权链接，请更新连接中心插件后重试。');
+      error.dingtalkLinkRejection = {
+        reason: 'invalid-redirect-uri',
+        path: '/oauth2/auth',
+        params: ['client_id', 'redirect_uri', 'scope'],
+      };
+      throw error;
+    },
+    async logout() {},
+    async execute() {},
+  };
+  const service = createDingtalkPersonalService({
+    dws,
+    ensureSkills: async () => ({ count: 0 }),
+    inspectSkills: async () => ({ available: false, count: 0, names: [], collisions: [] }),
+    logger: { warn: (...args) => warnings.push(args) },
+  });
+
+  assert.equal(service.startConnect(false), true);
+  await service.waitForAuthorizationStart(1_000);
+  for (let index = 0; index < 50 && service.phase !== 'error'; index += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  const status = await service.status();
+  assert.equal(status.phase, 'error');
+  assert.equal(status.authorizeUrl, null);
+  assert.match(status.message, /无法识别的授权链接/);
+  assert.deepEqual(warnings, [[
+    'DWS returned an untrusted DingTalk authorization link (reason=%s, path=%s, params=%s)',
+    'invalid-redirect-uri',
+    '/oauth2/auth',
+    'client_id,redirect_uri,scope',
+  ]]);
+});

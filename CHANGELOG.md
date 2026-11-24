@@ -10,8 +10,8 @@ This file records the notable changes in each dsh-im release. Its format follows
 
 ### Fixed / 修复
 
-- 钉钉个人账号授权：接受 DWS 1.0.62 起授权链接新增的可选参数 `caller`、`callerUmt`（非空且有长度上限），修复界面不出现授权入口、5 分钟后授权超时的问题；主机、路径、回调地址等其余校验不变，未知参数仍被拒绝。
-  Accept the optional `caller` and `callerUmt` parameters that DWS 1.0.62+ adds to the DingTalk authorization link (non-empty, length-bounded) in both the host parser and the client link check, so the authorize entry appears again instead of timing out after five minutes. All other checks stay strict and unknown parameters are still rejected.
+- 钉钉个人账号授权：修复 DWS 1.0.62 起界面不出现授权入口、5 分钟后授权超时的问题。授权链接改为只严格校验安全相关部分（https、主机 `login.dingtalk.com`、无端口与账号信息、已知路径、唯一的 `client_id` 与 `127.0.0.1` 的 `/callback` 回调；设备码链接校验 `user_code` 格式），其余参数与取值不再限定，只设链接长度和参数个数上限，DWS 以后新增参数不会再导致授权失效；宿主与界面共用同一套规则。若 DWS 给出无法信任的钉钉链接，立即结束本次授权并提示更新插件，日志只记录路径与参数名。
+  Fix the DingTalk personal authorization that never showed its entry and timed out after five minutes since DWS 1.0.62. Links are now checked only on their trust anchors (https, host `login.dingtalk.com`, no port or credentials, a known path, a single `client_id` and a single `127.0.0.1` `/callback` redirect; the device link keeps its `user_code` format check). Other parameters and values are tolerated within link-length and parameter-count bounds, so future DWS parameters no longer break sign-in. Host and client share one rule set. An untrusted DingTalk link now ends the attempt at once with a clear message, and the log records only the path and parameter names.
 
 ## [2.10.1] - 2026-11-18
 

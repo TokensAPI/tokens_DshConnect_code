@@ -7,14 +7,18 @@ import {
   ensureDws,
   installedDwsVersion,
 } from './dws-provision.js';
+import { checkDingtalkAuthorizationUrl } from '../../../shared/connectors/dingtalk-authorization-url.js';
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 const LOGIN_TIMEOUT_MS = 15 * 60_000;
 const MAX_OUTPUT_SIZE = 8 * 1024 * 1024;
 const MAX_ERROR_DETAIL_SIZE = 4 * 1024;
 const ANSI_ESCAPE = /\u001b\[[0-?]*[ -/]*[@-~]/g;
-const AUTH_URL_PATTERN = /https:\/\/login\.dingtalk\.com\/oauth2\/(?:device\/verify\.htm|auth)\?[^\s"'<>\u001b]+/g;
-const AUTH_URL_REDACTION_PATTERN = /https:\/\/login\.dingtalk\.com\/oauth2\/(?:device\/verify\.htm|auth)(?:\?[^\s"'<>\u001b]+)?/gi;
+// Any login.dingtalk.com link in DWS output is an authorization candidate; the shared
+// checker decides whether it is trusted.
+const DINGTALK_LINK_PATTERN = /https?:\/\/login\.dingtalk\.com[^\s"'<>\u001b]*/gi;
+const AUTH_URL_REDACTION_PATTERN = DINGTALK_LINK_PATTERN;
+export const UNTRUSTED_AUTH_LINK_MESSAGE = '钉钉官方组件返回了无法识别的授权链接，请更新连接中心插件后重试。';
 
 const ALLOWED_TOP_LEVEL = new Set([
   'agoal', 'aisearch', 'aitable', 'api', 'attendance', 'calendar', 'chat', 'contact',
@@ -41,77 +45,54 @@ export function sanitizeDwsText(value) {
     .replace(/((?:授权码|验证码|user\s+code|device\s+code)\s*[:=]\s*)[A-Z0-9-]+/gi, '$1[REDACTED]');
 }
 
-export function trustedDingtalkAuthorizationUrl(value) {
+function scanDingtalkLinks(value) {
   const text = String(value ?? '').replace(ANSI_ESCAPE, '');
-  for (const match of text.matchAll(AUTH_URL_PATTERN)) {
-    try {
-      const url = new URL(match[0]);
-      if (url.protocol !== 'https:' || url.hostname !== 'login.dingtalk.com'
-        || url.port !== '' || url.username !== '' || url.password !== '') continue;
-      const keys = [...url.searchParams.keys()];
-      if (url.pathname === '/oauth2/device/verify.htm') {
-        const code = url.searchParams.get('user_code');
-        if (keys.length === 1 && keys[0] === 'user_code'
-          && code !== null && /^[A-Z0-9]{4,12}(?:-[A-Z0-9]{2,12})+$/.test(code)) {
-          return url.href;
-        }
-        continue;
-      }
-      if (url.pathname !== '/oauth2/auth') continue;
-      const allowedKeys = new Set([
-        'client_id', 'redirect_uri', 'response_type', 'scope', 'prompt', 'corpId',
-        // DWS 1.0.62+ adds the optional caller and callerUmt parameters.
-        'caller', 'callerUmt',
-      ]);
-      if (keys.length < 5 || keys.length > 8 || new Set(keys).size !== keys.length
-        || keys.some((key) => !allowedKeys.has(key))) continue;
-      const clientId = url.searchParams.get('client_id');
-      const redirectValue = url.searchParams.get('redirect_uri');
-      const corpId = url.searchParams.get('corpId');
-      const caller = url.searchParams.get('caller');
-      const callerUmt = url.searchParams.get('callerUmt');
-      if (clientId === null || clientId.trim() === '' || clientId.length > 256
-        || redirectValue === null
-        || (corpId !== null && (corpId.trim() === '' || corpId.length > 256))
-        || (caller !== null && (caller.trim() === '' || caller.length > 64))
-        || (callerUmt !== null && (callerUmt.trim() === '' || callerUmt.length > 1024))
-        || url.searchParams.get('response_type') !== 'code'
-        || url.searchParams.get('scope') !== 'openid corpid'
-        || url.searchParams.get('prompt') !== 'consent') continue;
-      const redirect = new URL(redirectValue);
-      const port = Number(redirect.port);
-      if (redirect.protocol !== 'http:' || redirect.hostname !== '127.0.0.1'
-        || !Number.isInteger(port) || port < 1 || port > 65_535
-        || redirect.pathname !== '/callback' || redirect.search !== '' || redirect.hash !== ''
-        || redirect.username !== '' || redirect.password !== '') continue;
-      return url.href;
-    } catch {
-      // Keep scanning in case a later URL is valid.
-    }
+  let firstRejection;
+  for (const match of text.matchAll(DINGTALK_LINK_PATTERN)) {
+    const result = checkDingtalkAuthorizationUrl(match[0]);
+    if (result.ok) return { href: result.href };
+    firstRejection ??= result;
   }
-  return undefined;
+  return { rejection: firstRejection };
 }
 
-export function createAuthorizationUrlParser(onUrl) {
+export function trustedDingtalkAuthorizationUrl(value) {
+  return scanDingtalkLinks(value).href;
+}
+
+/**
+ * Emits the first trusted link through onUrl. When complete output lines contain a
+ * login.dingtalk.com link but none of them is trusted, reports the first rejection
+ * (reason, path and parameter names only) through onRejected, once.
+ */
+export function createAuthorizationUrlParser(onUrl, onRejected) {
   let buffer = '';
   let emitted;
+  let rejection;
   return Object.freeze({
     push(chunk) {
-      if (emitted !== undefined) return emitted;
+      if (emitted !== undefined || rejection !== undefined) return emitted;
       buffer = `${buffer}${String(chunk)}`.slice(-32 * 1024);
       const lineEnd = Math.max(buffer.lastIndexOf('\n'), buffer.lastIndexOf('\r'));
       if (lineEnd < 0) return undefined;
       const completeLines = buffer.slice(0, lineEnd + 1);
       buffer = buffer.slice(lineEnd + 1);
-      const url = trustedDingtalkAuthorizationUrl(completeLines);
-      if (url !== undefined) {
-        emitted = url;
-        onUrl?.(url);
+      const scan = scanDingtalkLinks(completeLines);
+      if (scan.href !== undefined) {
+        emitted = scan.href;
+        onUrl?.(emitted);
+      } else if (scan.rejection !== undefined) {
+        const { ok: _ok, ...details } = scan.rejection;
+        rejection = details;
+        onRejected?.(details);
       }
       return emitted;
     },
     value() {
       return emitted;
+    },
+    rejection() {
+      return rejection;
     },
   });
 }
@@ -277,15 +258,39 @@ export function createDws(internals = {}) {
 
     async login(signal, onAuthorizeUrl) {
       const bin = await ensureDwsImpl();
-      const parser = createAuthorizationUrlParser(onAuthorizeUrl);
-      const result = await run(bin, [
-        'auth', 'login', '--recommend', '--no-browser', '--format', 'json',
-      ], {
-        signal,
-        timeoutMs: LOGIN_TIMEOUT_MS,
-        onOutput: (chunk) => parser.push(chunk),
-      });
+      // Stop this login child at once when DWS prints a DingTalk link we cannot trust,
+      // instead of leaving the user without an entry until DWS times out.
+      const loginAbort = new AbortController();
+      const forwardAbort = () => loginAbort.abort();
+      signal?.addEventListener('abort', forwardAbort, { once: true });
+      if (signal?.aborted) loginAbort.abort();
+      const untrustedLink = (rejection) => {
+        const error = new Error(UNTRUSTED_AUTH_LINK_MESSAGE);
+        error.dingtalkLinkRejection = rejection;
+        return error;
+      };
+      const parser = createAuthorizationUrlParser(onAuthorizeUrl, () => loginAbort.abort());
+      let result;
+      try {
+        result = await run(bin, [
+          'auth', 'login', '--recommend', '--no-browser', '--format', 'json',
+        ], {
+          signal: loginAbort.signal,
+          timeoutMs: LOGIN_TIMEOUT_MS,
+          onOutput: (chunk) => parser.push(chunk),
+        });
+      } catch (error) {
+        if (parser.rejection() !== undefined) throw untrustedLink(parser.rejection());
+        throw error;
+      } finally {
+        signal?.removeEventListener('abort', forwardAbort);
+      }
       parser.push('\n');
+      if (parser.value() === undefined && parser.rejection() !== undefined) {
+        const current = await readStatus(bin, signal);
+        if (current.authenticated) return current;
+        throw untrustedLink(parser.rejection());
+      }
       const current = await readStatus(bin, signal);
       if (current.authenticated) return current;
       if (result.code !== 0) {

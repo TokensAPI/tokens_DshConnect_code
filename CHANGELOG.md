@@ -557,5 +557,6 @@ This file records the notable changes in each dsh-im release. Its format follows
 
 [2.9.8]: https://github.com/TokensAPI/tokens_DshConnect_code/compare/v2.9.7...v2.9.8
 
+[2.10.2]: https://github.com/TokensAPI/tokens_DshConnect_code/compare/v2.10.1...v2.10.2
 [2.10.1]: https://github.com/TokensAPI/tokens_DshConnect_code/compare/v2.10.0...v2.10.1
 [2.10.0]: https://github.com/TokensAPI/tokens_DshConnect_code/compare/v2.9.8...v2.10.0
